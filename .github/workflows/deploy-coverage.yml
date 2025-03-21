@@ -27,178 +27,42 @@ jobs:
         run: |
           pytest --cov=src --cov-report=html --cov-report=xml
 
-      - name: Ensure coverage.xml is generated
-        run: |
-          echo "Ensuring coverage.xml is generated..."
-          pytest --cov=src --cov-report=html --cov-report=xml
-
-      - name: Debug htmlcov directory
-        run: |
-          echo "Listing contents of htmlcov directory:" && ls -la htmlcov
-
-      - name: Debug GitHub Pages branch before deployment
-        run: |
-          echo "Fetching and listing contents of gh-pages branch before deployment:" && \
-          git fetch origin gh-pages && \
-          git checkout gh-pages && \
-          ls -la
-
-      - name: Restore README.md from main branch before backup
-        run: |
-          echo "Restoring README.md from main branch..."
-          git checkout main -- README.md
-
-      - name: Backup README.md
-        run: |
-          echo "Backing up README.md..."
-          cp README.md /tmp/README.md
-
-      - name: Clean gh-pages branch thoroughly
-        run: |
-          echo "Cleaning gh-pages branch thoroughly before deployment:" && \
-          git clean -fdx && \
-          git rm -r --cached --ignore-unmatch *
-
-      - name: Restore README.md
-        run: |
-          echo "Restoring README.md..."
-          cp /tmp/README.md README.md
-
-      - name: Restore README.md from main branch
-        run: |
-          echo "Restoring README.md from main branch..."
-          git checkout main -- README.md
-          mkdir -p gh-pages
-          cp README.md gh-pages/
-
-      - name: Set Git author identity
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-
-      - name: Force add all files
-        run: |
-          echo "Force adding all files to the commit, including untracked files:" && \
-          git add -A
-
-      - name: Debug gh-pages directory before staging
-        run: |
-          echo "Listing contents of gh-pages directory before staging:" && \
-          ls -la gh-pages
-
-      - name: Stage all files in gh-pages
-        run: |
-          echo "Staging all files in gh-pages directory:" && \
-          cd gh-pages && \
-          git add -A && \
-          cd ..
-
-      - name: Debug gh-pages directory after staging
-        run: |
-          echo "Listing contents of gh-pages directory after staging:" && \
-          ls -la gh-pages
-
-      - name: Force commit
-        run: |
-          echo "Forcing a commit even if no changes are detected:" && \
-          git commit --allow-empty -m "Force deploy coverage" || echo "No changes to commit"
-
-      - name: Deploy to GitHub Pages
-        run: |
-          echo "Preparing deployment..."
-          mkdir -p gh-pages
-          cp -r htmlcov/* gh-pages/
-          touch gh-pages/.nojekyll
-          cd gh-pages
-          git init
-          git remote add origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git
-          git checkout -b gh-pages
-          git add .
-          git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Deploy coverage report"
-          git push --force origin gh-pages
-
-      - name: Debug copied htmlcov directory
-        run: |
-          echo "Listing contents of htmlcov directory in gh-pages branch after copying:" && \
-          ls -la htmlcov
-
-      - name: Compare htmlcov directory
-        run: |
-          echo "Comparing htmlcov directory before and after deployment:" && \
-          diff -r htmlcov /home/runner/actions_github_pages_1742571447628/htmlcov || echo "No differences found"
-
-      - name: Debug gh-pages branch after deployment
-        run: |
-          echo "Fetching and listing contents of gh-pages branch after deployment:" && \
-          git fetch origin gh-pages && \
-          git checkout gh-pages && \
-          ls -la
-
-      - name: Copy README.md to gh-pages
-        run: |
-          echo "Copying README.md to gh-pages directory..."
-          cp README.md gh-pages/
-
       - name: Validate coverage.xml existence
         run: |
-          echo "Validating coverage.xml existence..."
           if [ ! -f coverage.xml ]; then
             echo "Error: coverage.xml not found. Exiting."
             exit 1
           fi
 
-      - name: Validate and fallback for coverage extraction
+      - name: Prepare gh-pages branch
         run: |
-          echo "Extracting coverage percentage from coverage.xml..."
-          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{if ($1 >= 0 && $1 <= 1) printf("%.0f", $1 * 100); else exit 1}') || echo "0"
-          if [ -z "$COVERAGE" ] || [ "$COVERAGE" -eq "0" ]; then
-            echo "Error: Failed to extract a valid coverage percentage. Defaulting to 0%."
-            COVERAGE=0
-          fi
-          echo "Coverage percentage: $COVERAGE%"
+          git fetch origin gh-pages || echo "gh-pages branch does not exist yet."
+          git checkout -B gh-pages
+          git rm -rf . || echo "No files to remove."
 
-      - name: Validate badge URL
+      - name: Copy coverage report to gh-pages
         run: |
-          echo "Validating badge URL..."
-          BADGE_URL="https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg"
-          STATUS_CODE=$(curl -o /dev/null -s -w "%{http_code}" "$BADGE_URL")
-          if [ "$STATUS_CODE" -ne 200]; then
-            echo "Error: Badge URL is not accessible (HTTP $STATUS_CODE). Exiting."
-            exit 1
-          fi
-          echo "Badge URL is valid: $BADGE_URL"
+          mkdir -p gh-pages
+          cp -r htmlcov/* gh-pages/ || echo "No coverage files to copy."
+          touch gh-pages/.nojekyll
+
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add -A
+          git commit -m "Deploy coverage report" || echo "No changes to commit."
+          git push --force origin gh-pages
 
       - name: Update Coverage Badge in README
         run: |
-          echo "Updating coverage badge in README.md..."
-          CURRENT_BADGE=$(grep -oP '\[!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[0-9]+%25-brightgreen\.svg\)\]\(.*\)' README.md || echo "")
-          NEW_BADGE="[![Coverage](https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)"
-          if [ "$CURRENT_BADGE" != "$NEW_BADGE" ]; then
-            if [ -z "$CURRENT_BADGE" ]; then
-              echo "No existing badge found. Adding new badge."
-              echo "$NEW_BADGE" >> README.md
-            else
-              sed -i "s|$CURRENT_BADGE|$NEW_BADGE|" README.md
-            fi
-            echo "Updated README.md contents:"
-            cat README.md
-            git add README.md
-            git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
-            git push
-          else
-            echo "Coverage badge is already up-to-date. Skipping commit."
-
-      - name: Update Coverage Badge in README (main branch)
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: |
-          echo "Extracting coverage percentage from coverage.xml..."
           COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
           if [ -z "$COVERAGE" ]; then
             echo "Error: Failed to extract coverage percentage. Exiting."
             exit 1
           fi
-          echo "Coverage percentage: $COVERAGE%"
-          sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" README.md
+          BADGE_URL="https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg"
+          sed -i "s|\[!\[Coverage\](.*)\](.*)|[![Coverage]($BADGE_URL)](https://rynpc.github.io/python-poc/)|" README.md
           git add README.md
-          git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%" || echo "No changes to commit"
+          git commit -m "Update coverage badge to $COVERAGE%" || echo "No changes to commit."
           git push
