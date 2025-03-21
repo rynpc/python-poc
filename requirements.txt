@@ -14,3 +14,9 @@ isort>=5.12.0
 
 # Documentation coverage
 interrogate>=1.5.0
+
+# Explicitly upgrade the py package to a secure version
+py>=1.11.1
+
+# Add safety to the requirements file for dependency vulnerability scanning
+safety>=2.3.0
