@@ -129,8 +129,17 @@ jobs:
             echo "No new vulnerabilities detected"
             echo "status=success" >> "$GITHUB_OUTPUT"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log Security Job Status
+        run: |
+          echo "Security job status: ${{ steps.vuln-comparison.outputs.status }}"
+          if [ "${{ steps.vuln-comparison.outputs.status }}" == "success" ]; then
+            echo "Security job succeeded."
+          elif [ "${{ steps.vuln-comparison.outputs.status }}" == "failed" ]; then
+            echo "Security job failed."
+          else
+            echo "Security job status is unknown."
+          fi
 
       - name: Log Security Job Result
         run: |
