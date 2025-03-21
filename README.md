@@ -2,7 +2,7 @@
 
 A simple command-line task management application built with Python, featuring automated test coverage reporting.
 
-[![Coverage](https://img.shields.io/badge/coverage-41%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)
+[![Coverage](https://img.shields.io/badge/coverage-50%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)
 
 ## Features
 
