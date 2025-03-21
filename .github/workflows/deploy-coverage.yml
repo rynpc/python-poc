@@ -1,20 +1,8 @@
 name: Deploy Coverage Report
 
 on:
-  workflow_call:
-    inputs:
-      coverage-artifact:
-        required: true
-        type: string
-      repository-owner:
-        required: true
-        type: string
-      repository-name:
-        required: true
-        type: string
-    secrets:
-      deploy_token:
-        required: true
+  push:
+    branches: ["main"]
 
 jobs:
   deploy:
