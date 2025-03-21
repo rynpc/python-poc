@@ -38,6 +38,11 @@ jobs:
           git checkout gh-pages && \
           ls -la
 
+      - name: Restore README.md from main branch before backup
+        run: |
+          echo "Restoring README.md from main branch..."
+          git checkout main -- README.md
+
       - name: Backup README.md
         run: |
           echo "Backing up README.md..."
