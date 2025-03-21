@@ -1,0 +1,19 @@
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+
+# IDE specific files
+.vscode/
+.idea/
+*.swp
+*.swo 
