@@ -55,7 +55,7 @@ def test_update_coverage_badge_io_error(tmp_path):
     # Test file permission error
     readme_path = tmp_path / "readme.md"
     readme_path.write_text("# Project\n[![Coverage](old_badge.svg)](link)")
-    os.chmod(str(readme_path), 0o444)  # Make file read-only
+    os.chmod(str(readme_path), 0o600)  # Make file owner read/write only
     assert update_coverage_badge(85, str(readme_path)) == False
 
 def test_main_success(sample_coverage_xml, sample_readme, monkeypatch):

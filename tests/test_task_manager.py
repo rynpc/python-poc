@@ -1,17 +1,22 @@
 """
 Test module for TaskManager class.
 
-Tests all functionalities including:
-- Task creation and validation
-- Task retrieval and updates
+This module contains unit tests for the TaskManager class, covering:
+- Task creation (basic and with due date)
+- Input validation for task creation
+- Task retrieval by ID
+- Task attribute updates
 - Task deletion
-- Task listing and filtering
-- Task completion marking
+- Task listing (all and incomplete only)
+- Task completion status management
+
+Each test focuses on a specific functionality to ensure the TaskManager
+works as expected under various conditions.
 """
 
 import pytest
 from datetime import datetime
-from src.task_manager import TaskManager, Task
+from src.task_manager import TaskManager
 
 def test_add_task():
     """Test adding a basic task."""
@@ -111,4 +116,4 @@ def test_mark_completed():
     task = manager.add_task("Test", "Test description")
     updated = manager.mark_completed(task.id)
     assert updated.completed
-    assert task.completed  # Should update the original object 
+    assert task.completed  # Should update the original object
