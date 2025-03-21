@@ -62,6 +62,7 @@ jobs:
         run: |
           echo "Restoring README.md from main branch..."
           git checkout main -- README.md
+          mkdir -p gh-pages
           cp README.md gh-pages/
 
       - name: Set Git author identity
@@ -115,11 +116,27 @@ jobs:
           echo "Copying README.md to gh-pages directory..."
           cp README.md gh-pages/
 
-      - name: Update Coverage Badge in README
+      - name: Validate coverage.xml existence
+        run: |
+          echo "Validating coverage.xml existence..."
+          if [ ! -f coverage.xml ]; then
+            echo "Error: coverage.xml not found. Exiting."
+            exit 1
+          fi
+
+      - name: Extract and validate coverage percentage
         run: |
           echo "Extracting coverage percentage from coverage.xml..."
           COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
+          if [ -z "$COVERAGE" ]; then
+            echo "Error: Failed to extract coverage percentage. Exiting."
+            exit 1
+          fi
           echo "Coverage percentage: $COVERAGE%"
+
+      - name: Update Coverage Badge in README
+        run: |
+          echo "Updating coverage badge in README.md..."
           sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" gh-pages/README.md
           cd gh-pages
           git add README.md
@@ -131,6 +148,10 @@ jobs:
         run: |
           echo "Extracting coverage percentage from coverage.xml..."
           COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
+          if [ -z "$COVERAGE" ]; then
+            echo "Error: Failed to extract coverage percentage. Exiting."
+            exit 1
+          fi
           echo "Coverage percentage: $COVERAGE%"
           sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" README.md
           git add README.md
