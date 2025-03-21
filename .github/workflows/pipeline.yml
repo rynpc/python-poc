@@ -18,7 +18,7 @@ permissions:
 env:
   PYTHON_VERSION: '3.x'
   COVERAGE_REPORT_DIR: htmlcov
-  MIN_COVERAGE: 30
+  MIN_COVERAGE: 35
 
 jobs:
   # Reusable job for Python setup
