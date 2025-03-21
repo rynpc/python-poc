@@ -137,7 +137,7 @@ jobs:
       - name: Update Coverage Badge in README
         run: |
           echo "Updating coverage badge in README.md..."
-          CURRENT_BADGE=$(grep -oP '\[!\[Coverage\]\(.*\)\]\(.*\)' gh-pages/README.md)
+          CURRENT_BADGE=$(grep -oP '\[!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[0-9]+%25-brightgreen\.svg\)\]\(.*\)' gh-pages/README.md || echo "")
           NEW_BADGE="[![Coverage](https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)"
           if [ "$CURRENT_BADGE" != "$NEW_BADGE" ]; then
             sed -i "s|$CURRENT_BADGE|$NEW_BADGE|" gh-pages/README.md
