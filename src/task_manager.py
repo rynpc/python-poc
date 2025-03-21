@@ -50,7 +50,7 @@ class TaskManager:
     and deleting tasks, as well as listing tasks and marking them as completed.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize an empty task manager."""
         self._tasks: Dict[int, Task] = {}
         self._next_id: int = 1
@@ -105,8 +105,8 @@ class TaskManager:
     def update_task(
         self,
         task_id: int,
-        title: str = None,
-        description: str = None,
+        title: Optional[str] = None,
+        description: Optional[str] = None,
         due_date: Optional[datetime] = None,
     ) -> Task:
         """

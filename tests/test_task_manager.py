@@ -21,7 +21,7 @@ import pytest
 from src.task_manager import TaskManager
 
 
-def test_add_task():
+def test_add_task() -> None:
     """Test adding a basic task."""
     manager = TaskManager()
     task = manager.add_task("Test", "Test description")
@@ -32,7 +32,7 @@ def test_add_task():
     assert task.due_date is None
 
 
-def test_add_task_with_due_date():
+def test_add_task_with_due_date() -> None:
     """Test adding a task with a due date."""
     manager = TaskManager()
     due_date = datetime(2024, 12, 31)
@@ -40,7 +40,7 @@ def test_add_task_with_due_date():
     assert task.due_date == due_date
 
 
-def test_add_task_validation():
+def test_add_task_validation() -> None:
     """Test validation when adding tasks."""
     manager = TaskManager()
     with pytest.raises(ValueError):
@@ -49,7 +49,7 @@ def test_add_task_validation():
         manager.add_task("Title", "")
 
 
-def test_get_task():
+def test_get_task() -> None:
     """Test retrieving a task by ID."""
     manager = TaskManager()
     task = manager.add_task("Test", "Test description")
@@ -57,14 +57,14 @@ def test_get_task():
     assert retrieved == task
 
 
-def test_get_nonexistent_task():
+def test_get_nonexistent_task() -> None:
     """Test retrieving a non-existent task."""
     manager = TaskManager()
     with pytest.raises(KeyError):
         manager.get_task(1)
 
 
-def test_update_task():
+def test_update_task() -> None:
     """Test updating a task's attributes."""
     manager = TaskManager()
     task = manager.add_task("Test", "Test description")
@@ -80,7 +80,7 @@ def test_update_task():
     assert updated == task  # Should be the same object
 
 
-def test_delete_task():
+def test_delete_task() -> None:
     """Test deleting a task."""
     manager = TaskManager()
     task = manager.add_task("Test", "Test description")
@@ -89,14 +89,14 @@ def test_delete_task():
         manager.get_task(task.id)
 
 
-def test_delete_nonexistent_task():
+def test_delete_nonexistent_task() -> None:
     """Test deleting a non-existent task."""
     manager = TaskManager()
     with pytest.raises(KeyError):
         manager.delete_task(1)
 
 
-def test_list_tasks():
+def test_list_tasks() -> None:
     """Test listing all tasks."""
     manager = TaskManager()
     task1 = manager.add_task("Test 1", "Description 1")
@@ -107,7 +107,7 @@ def test_list_tasks():
     assert task2 in tasks
 
 
-def test_list_incomplete_tasks():
+def test_list_incomplete_tasks() -> None:
     """Test listing only incomplete tasks."""
     manager = TaskManager()
     task1 = manager.add_task("Test 1", "Description 1")
@@ -120,7 +120,7 @@ def test_list_incomplete_tasks():
     assert task1 not in tasks
 
 
-def test_mark_completed():
+def test_mark_completed() -> None:
     """Test marking a task as completed."""
     manager = TaskManager()
     task = manager.add_task("Test", "Test description")
