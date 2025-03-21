@@ -13,6 +13,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Download coverage report
         uses: actions/download-artifact@v4
@@ -58,6 +60,7 @@ jobs:
           publish_dir: ./coverage-report
           destination_dir: .
           force_orphan: true
+          commit_message: "Deploy coverage report"
 
       - name: Verify deployment
         run: |
