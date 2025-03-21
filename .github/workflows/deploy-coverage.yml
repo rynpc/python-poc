@@ -69,7 +69,9 @@ jobs:
           force_orphan: true
           commit_message: "Deploy coverage report"
           full_commit_message: "Deploy coverage report to GitHub Pages"
-          branch: gh-pages
+          publish_branch: gh-pages
+          enable_jekyll: false
+          disable_nojekyll: true
 
       - name: List deployed files
         run: |
