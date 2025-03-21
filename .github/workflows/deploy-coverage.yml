@@ -20,6 +20,13 @@ jobs:
           name: ${{ inputs.coverage-artifact }}
           path: coverage-report
 
+      - name: Check coverage report
+        run: |
+          if [ ! -d "coverage-report/htmlcov" ]; then
+            echo "Error: Coverage report not found in expected location"
+            exit 1
+          fi
+
       - name: Generate coverage badge
         run: |
           if [ -f "coverage-report/coverage.xml" ]; then
@@ -31,9 +38,29 @@ jobs:
             echo "![Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)" > coverage-report/badge.md
           fi
 
+      - name: Create index.html
+        run: |
+          echo "<!DOCTYPE html>
+          <html>
+          <head>
+            <title>Task Manager Coverage Report</title>
+            <meta http-equiv='refresh' content='0;url=htmlcov/index.html'>
+          </head>
+          <body>
+            <p>Redirecting to coverage report...</p>
+          </body>
+          </html>" > coverage-report/index.html
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.deploy_token }}
-          publish_dir: ./coverage-report/htmlcov
-          destination_dir: coverage 
+          publish_dir: ./coverage-report
+          destination_dir: .
+          force_orphan: true
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for GitHub Pages to update..."
+          sleep 10
+          curl -I https://ryancowan.github.io/python-poc/ 

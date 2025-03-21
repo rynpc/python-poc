@@ -2,7 +2,7 @@
 
 A simple command-line task management application built with Python.
 
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://ryancowan.github.io/python-poc/coverage/) [View Coverage Report](https://ryancowan.github.io/python-poc/coverage/)
+[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://ryancowan.github.io/python-poc/) [View Coverage Report](https://ryancowan.github.io/python-poc/)
 
 ## Features
 
