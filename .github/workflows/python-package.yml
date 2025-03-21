@@ -50,3 +50,27 @@ jobs:
           htmlcov/
           coverage.xml
         retention-days: 14
+
+  deploy-coverage:
+    needs: build
+    if: github.ref == 'refs/heads/main'  # Only deploy on main branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-reports-3.11-${{ github.run_id }}
+          path: coverage-report
+
+      - name: Generate coverage badge
+        run: |
+          COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
+          echo "coverage: $COVERAGE"
+          echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./coverage-report/htmlcov
+          destination_dir: coverage

@@ -2,6 +2,8 @@
 
 A simple command-line task management application built with Python.
 
+[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://ryancowan.github.io/python-poc/coverage/)
+
 ## Features
 
 - Add tasks with title, description, and optional due date
