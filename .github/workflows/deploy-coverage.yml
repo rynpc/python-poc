@@ -1,35 +1,35 @@
 name: CI and Deploy Coverage
 
 on:
-  push:
+  workflow_run:
+    workflows: ["CodeQL"]
+    types:
+      - completed
     branches: ["main"]
   pull_request:
     branches: ["main"]
 
 permissions:
-  contents: write    # Required for checkout and committing changes
-  pages: write      # Required for GitHub Pages deployment
-  security-events: write  # Required for CodeQL analysis
-  actions: read     # Required for running actions
-  checks: read      # Required for checking workflow status
+  contents: write
+  pages: write
+  security-events: write
+  actions: read
+  checks: read
 
 env:
   PYTHON_VERSION: '3.x'
   COVERAGE_REPORT_DIR: htmlcov
 
 jobs:
-  code-scan:
+  tests-and-coverage:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: python
-
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+      
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -43,11 +43,8 @@ jobs:
       - name: Run tests with coverage
         run: pytest --cov=src --cov-report=html --cov-report=xml
 
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
       - name: Upload coverage report artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: |
@@ -55,8 +52,8 @@ jobs:
             ${{ env.COVERAGE_REPORT_DIR }}
 
   deploy-coverage:
-    needs: code-scan  # Wait for code scan to complete
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: tests-and-coverage
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: production
     timeout-minutes: 10
@@ -65,8 +62,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # Use your existing token with higher privileges to bypass branch protection
           token: ${{ secrets.actions }}
+          ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -87,7 +84,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Download coverage report artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: coverage-report
 
@@ -105,13 +102,11 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           
-          # Check if there are actual changes to commit
           if git diff --quiet README.md; then
             echo "No changes to README.md, skipping commit"
           else
             git add README.md
             git commit -m "Update coverage badge to ${COVERAGE}%"
-            # Push directly to main branch with your token that bypasses branch protection
             git push origin HEAD:main || {
               echo "Failed to push to main branch"
               exit 1
@@ -120,18 +115,12 @@ jobs:
 
       - name: Deploy Coverage Report to GitHub Pages
         run: |
-          # Create a fresh gh-pages branch
           git checkout --orphan gh-pages
-          # Remove all files except the coverage report
           find . -maxdepth 1 -not -name "${COVERAGE_REPORT_DIR}" -not -name '.git' -not -name '.gitignore' -exec rm -rf {} \;
-          # Copy coverage report to root
           cp -r ${COVERAGE_REPORT_DIR}/* .
-          # Add .nojekyll file to disable Jekyll processing
           touch .nojekyll
-          # Configure git
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          # Commit and push
           git add -A
           git commit -m "Deploy coverage report for commit ${GITHUB_SHA}"
           git push --force origin gh-pages
