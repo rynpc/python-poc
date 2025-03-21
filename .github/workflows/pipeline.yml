@@ -45,21 +45,6 @@ jobs:
           pip install -r requirements.txt
           pip install safety # For dependency vulnerability scanning
 
-  # Reusable step for Python setup and dependency installation
-  steps:
-    setup-python:
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
   security:
     name: Security Analysis
     needs: setup
@@ -73,8 +58,17 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Python and Install Dependencies
-        uses: ./.github/workflows/steps/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -132,7 +126,7 @@ jobs:
           NEW_COUNT=$(echo "$NEW_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')
           PREV_COUNT=${{ steps.prev-vulns.outputs.count }}
           
-          if [ "$NEW_COUNT" -gt "$PREV_COUNT" ]; then
+          if [ "$NEW_COUNT" -gt "$PREV_COUNT"; then
             echo "New vulnerabilities detected! Previous: $PREV_COUNT, Current: $NEW_COUNT"
             echo "status=failed" >> "$GITHUB_OUTPUT"
             exit 1
@@ -150,8 +144,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python and Install Dependencies
-        uses: ./.github/workflows/steps/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Check formatting with Black
         run: black --check src tests
@@ -189,8 +192,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Python and Install Dependencies
-        uses: ./.github/workflows/steps/setup-python
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run tests with coverage
         run: pytest --cov=src --cov-report=html --cov-report=json
