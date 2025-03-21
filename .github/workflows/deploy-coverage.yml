@@ -28,6 +28,7 @@ jobs:
             echo "Error: Coverage report not found in expected location"
             exit 1
           fi
+          echo "Coverage report found at coverage-report/htmlcov"
 
       - name: Generate coverage badge
         run: |
@@ -61,6 +62,16 @@ jobs:
           destination_dir: .
           force_orphan: true
           commit_message: "Deploy coverage report"
+          full_commit_message: "Deploy coverage report to GitHub Pages"
+          branch: gh-pages
+
+      - name: List deployed files
+        run: |
+          echo "Checking deployed files..."
+          git clone https://github.com/ryancowan/python-poc.git temp-repo
+          cd temp-repo
+          git checkout gh-pages
+          ls -la
 
       - name: Verify deployment
         run: |
