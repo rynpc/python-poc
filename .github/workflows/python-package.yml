@@ -43,5 +43,7 @@ jobs:
     uses: ./.github/workflows/deploy-coverage.yml
     with:
       coverage-artifact: coverage-report
+      repository-owner: ${{ github.repository_owner }}
+      repository-name: ${{ github.event.repository.name }}
     secrets:
       deploy_token: ${{ secrets.GITHUB_TOKEN }}

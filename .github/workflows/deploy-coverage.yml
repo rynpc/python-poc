@@ -6,6 +6,12 @@ on:
       coverage-artifact:
         required: true
         type: string
+      repository-owner:
+        required: true
+        type: string
+      repository-name:
+        required: true
+        type: string
     secrets:
       deploy_token:
         required: true
@@ -68,7 +74,7 @@ jobs:
       - name: List deployed files
         run: |
           echo "Checking deployed files..."
-          git clone https://x-access-token:${{ secrets.deploy_token }}@github.com/${{ github.repository }}.git temp-repo
+          git clone https://x-access-token:${{ secrets.deploy_token }}@github.com/${{ inputs.repository-owner }}/${{ inputs.repository-name }}.git temp-repo
           cd temp-repo
           git checkout gh-pages
           ls -la
@@ -77,4 +83,4 @@ jobs:
         run: |
           echo "Waiting for GitHub Pages to update..."
           sleep 10
-          curl -I https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/ 
+          curl -I https://${{ inputs.repository-owner }}.github.io/${{ inputs.repository-name }}/ 
