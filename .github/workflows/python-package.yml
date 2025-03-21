@@ -64,9 +64,14 @@ jobs:
 
       - name: Generate coverage badge
         run: |
-          COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
-          echo "coverage: $COVERAGE"
-          echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
+          if [ -f "coverage-report/coverage.xml" ]; then
+            COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
+            echo "coverage: $COVERAGE"
+            echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
+          else
+            echo "coverage.xml not found, using default badge"
+            echo "![Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)" > coverage-report/badge.md
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
