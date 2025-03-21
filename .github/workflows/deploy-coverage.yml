@@ -38,10 +38,26 @@ jobs:
           git checkout gh-pages && \
           ls -la
 
+      - name: Backup README.md
+        run: |
+          echo "Backing up README.md..."
+          cp README.md /tmp/README.md
+
       - name: Clean gh-pages branch
         run: |
           echo "Cleaning gh-pages branch before deployment:" && \
           git rm -r --ignore-unmatch *
+
+      - name: Restore README.md
+        run: |
+          echo "Restoring README.md..."
+          cp /tmp/README.md README.md
+
+      - name: Restore README.md from main branch
+        run: |
+          echo "Restoring README.md from main branch..."
+          git checkout main -- README.md
+          cp README.md gh-pages/
 
       - name: Set Git author identity
         run: |
@@ -103,4 +119,15 @@ jobs:
           cd gh-pages
           git add README.md
           git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
+          git push
+
+      - name: Update Coverage Badge in README (main branch)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          echo "Extracting coverage percentage from coverage.xml..."
+          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
+          echo "Coverage percentage: $COVERAGE%"
+          sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" README.md
+          git add README.md
+          git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%" || echo "No changes to commit"
           git push
