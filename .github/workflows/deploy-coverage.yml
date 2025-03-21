@@ -8,12 +8,13 @@ on:
 
 jobs:
   build-and-deploy:
-    # Add condition to skip if commit is from GitHub Actions
     if: github.event.commits[0].author.email != 'actions@github.com'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Needed for proper git history
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -29,18 +30,12 @@ jobs:
         run: |
           pytest --cov=src --cov-report=html --cov-report=xml
 
-      - name: Validate coverage.xml existence
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "Error: coverage.xml not found. Exiting."
-            exit 1
-          fi
-
       - name: Update Coverage Badge in README (main branch)
+        if: github.ref == 'refs/heads/main'  # Only on main branch
         run: |
-          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
-          if [ -z "$COVERAGE" ]; then
-            echo "Error: Failed to extract coverage percentage. Exiting."
+          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%d\n", $1 * 100)}')
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" -lt 0 ] || [ "$COVERAGE" -gt 100]; then
+            echo "Error: Invalid coverage percentage. Exiting."
             exit 1
           fi
           BADGE_URL="https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg"
@@ -49,27 +44,15 @@ jobs:
           git config --global user.email "actions@github.com"
           git add README.md
           git commit -m "Update coverage badge to $COVERAGE%" || echo "No changes to commit."
-          git push
+          git push origin HEAD:main || exit 1
 
-      - name: Prepare gh-pages branch
+      - name: Deploy Coverage Report to GitHub Pages
+        if: github.ref == 'refs/heads/main'  # Only on main branch
         run: |
-          git fetch origin gh-pages || echo "gh-pages branch does not exist yet."
-          git checkout -B gh-pages
-
-      - name: Copy coverage report to gh-pages
-        run: |
-          mkdir -p gh-pages
-          cp -r htmlcov/* gh-pages/ || echo "No coverage files to copy."
-          touch gh-pages/.nojekyll
-
-      - name: Commit and push changes to gh-pages
-        run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
+          git checkout --orphan gh-pages
+          git rm -rf .
+          cp -r htmlcov/* .
+          touch .nojekyll
           git add -A
-          git commit -m "Deploy coverage report" || echo "No changes to commit."
-          git push --force origin gh-pages
-
-      - name: Cleanup temporary files
-        run: |
-          rm -rf gh-pages
+          git commit -m "Deploy coverage report" || echo "No changes to commit"
+          git push --force origin gh-pages || exit 1
