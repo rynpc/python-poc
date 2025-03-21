@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-deploy:
-    if: github.event.commits[0].author.email != 'actions@github.com'
+    if: github.event.commits[0].author.email != 'actions@github.com'  # Prevent recursion
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -27,32 +27,30 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests with coverage
-        run: |
-          pytest --cov=src --cov-report=html --cov-report=xml
+        run: pytest --cov=src --cov-report=html --cov-report=xml
 
       - name: Update Coverage Badge in README (main branch)
-        if: github.ref == 'refs/heads/main'  # Only on main branch
+        if: github.ref == 'refs/heads/main'
         run: |
-          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%d\n", $1 * 100)}')
-          if [ -z "$COVERAGE" ] || [ "$COVERAGE" -lt 0 ] || [ "$COVERAGE" -gt 100]; then
+          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%d", $1 * 100)}')
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" < 0 ] || [ "$COVERAGE" > 100 ]; then
             echo "Error: Invalid coverage percentage. Exiting."
             exit 1
           fi
-          BADGE_URL="https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg"
-          sed -i "s|\[!\[Coverage\](.*)\](.*)|[![Coverage]($BADGE_URL)](https://rynpc.github.io/python-poc/)|" README.md
+          BADGE_URL="https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg"
+          sed -i 's|\[!\[Coverage\]([^)]*)\]([^)]*)|\[!\[Coverage\]('"${BADGE_URL}"')\](https://rynpc.github.io/python-poc/)|' README.md
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add README.md
-          git commit -m "Update coverage badge to $COVERAGE%" || echo "No changes to commit."
-          git push origin HEAD:main || exit 1
+          git commit -m "Update coverage badge to ${COVERAGE}%" || echo "No changes to commit."
+          git push origin HEAD:main
 
       - name: Deploy Coverage Report to GitHub Pages
-        if: github.ref == 'refs/heads/main'  # Only on main branch
+        if: github.ref == 'refs/heads/main'
         run: |
           git checkout --orphan gh-pages
-          git rm -rf .
           cp -r htmlcov/* .
           touch .nojekyll
           git add -A
           git commit -m "Deploy coverage report" || echo "No changes to commit"
-          git push --force origin gh-pages || exit 1
+          git push --force origin gh-pages
