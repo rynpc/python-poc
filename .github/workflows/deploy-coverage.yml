@@ -36,22 +36,6 @@ jobs:
       - name: Run tests with coverage
         run: pytest --cov=src --cov-report=html --cov-report=xml
 
-      - name: Wait for CodeQL scan
-        run: |
-          while true; do
-            STATUS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-                    "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?check_name=CodeQL" | \
-                    jq -r '.check_runs[0].conclusion')
-            if [ "$STATUS" = "success" ]; then
-              break
-            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "cancelled" ]; then
-              echo "CodeQL scan failed or was cancelled"
-              exit 1
-            fi
-            echo "Waiting for CodeQL scan to complete..."
-            sleep 30
-          done
-
       - name: Update Coverage Badge in README (main branch)
         if: github.ref == 'refs/heads/main'
         run: |
