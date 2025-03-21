@@ -89,4 +89,4 @@ jobs:
           echo "Waiting for GitHub Pages to update..."
           sleep 10
           echo "Checking GitHub Pages URL..."
-          curl -I https://<your-username>.github.io/<your-repository-name>/
+          curl -I https://${{ github.repository_owner }}.github.io/${{ github.repository }}/
