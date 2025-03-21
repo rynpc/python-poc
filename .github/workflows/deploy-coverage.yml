@@ -1,11 +1,13 @@
-name: Deploy Coverage Report
+name: CI and Deploy Coverage Report
 
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  deploy:
+  ci-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -26,6 +28,11 @@ jobs:
       - name: Run tests and generate coverage report
         run: |
           bash scripts/test.sh
+
+      - name: Move coverage report
+        run: |
+          mkdir -p coverage-report
+          mv htmlcov coverage-report/
 
       - name: Check coverage report
         run: |
@@ -82,4 +89,4 @@ jobs:
           echo "Waiting for GitHub Pages to update..."
           sleep 10
           echo "Checking GitHub Pages URL..."
-          curl -I https://${{ inputs.repository-owner }}.github.io/${{ inputs.repository-name }}/
+          curl -I https://<your-username>.github.io/<your-repository-name>/
