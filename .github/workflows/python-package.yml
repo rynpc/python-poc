@@ -28,24 +28,4 @@ jobs:
         pip install pytest pytest-cov
     - name: Run tests with coverage
       run: |
-        pytest --cov=src --cov-report=html --cov-report=xml
-        echo "Coverage report generated:"
-        ls -la htmlcov/
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: |
-          htmlcov/
-          coverage.xml
-
-  deploy-coverage:
-    needs: build
-    if: github.ref == 'refs/heads/main'
-    uses: ./.github/workflows/deploy-coverage.yml
-    with:
-      coverage-artifact: coverage-report
-      repository-owner: ${{ github.repository_owner }}
-      repository-name: ${{ github.event.repository.name }}
-    secrets:
-      deploy_token: ${{ secrets.GITHUB_TOKEN }}
+        pytest -v

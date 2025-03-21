@@ -10,11 +10,22 @@ jobs:
     permissions:
       contents: write
     steps:
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          name: ${{ inputs.coverage-artifact }}
-          path: coverage-report
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests and generate coverage report
+        run: |
+          bash scripts/test.sh
 
       - name: Check coverage report
         run: |
