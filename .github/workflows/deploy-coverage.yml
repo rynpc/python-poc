@@ -127,8 +127,8 @@ jobs:
       - name: Extract and validate coverage percentage
         run: |
           echo "Extracting coverage percentage from coverage.xml..."
-          COVERAGE=$(grep -oP 'line-rate=\"\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
-          if [ -z "$COVERAGE" ] || ! [[ "$COVERAGE" =~ ^[0-9]+$ ]]; then
+          COVERAGE=$(grep -oP 'line-rate=\"\K[0-9.]+' coverage.xml | awk '{if ($1 >= 0 && $1 <= 1) printf("%.0f", $1 * 100); else exit 1}')
+          if [ -z "$COVERAGE" ]; then
             echo "Error: Failed to extract a valid coverage percentage. Exiting."
             exit 1
           fi
