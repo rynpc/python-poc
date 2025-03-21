@@ -37,12 +37,16 @@ jobs:
             repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
               vulnerabilityAlerts(first:100, states: OPEN) {
                 nodes {
-                  severity
+                  securityVulnerability {
+                    severity
+                  }
                 }
               }
             }
           }
         ')
+        echo "Previous alerts:"
+        echo "$PREV_ALERTS" | jq -r '.data.repository.vulnerabilityAlerts.nodes[] | .securityVulnerability.severity'
         echo "count=$(echo "$PREV_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')" >> "$GITHUB_OUTPUT"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -84,14 +88,22 @@ jobs:
             repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
               vulnerabilityAlerts(first:100, states: OPEN) {
                 nodes {
-                  severity
+                  securityVulnerability {
+                    severity
+                  }
                 }
               }
             }
           }
         ')
+        echo "New alerts:"
+        echo "$NEW_ALERTS" | jq -r '.data.repository.vulnerabilityAlerts.nodes[] | .securityVulnerability.severity'
+        
         NEW_COUNT=$(echo "$NEW_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')
         PREV_COUNT=${{ steps.prev-vulns.outputs.count }}
+        
+        echo "Previous vulnerability count: $PREV_COUNT"
+        echo "New vulnerability count: $NEW_COUNT"
         
         if [ "$NEW_COUNT" -gt "$PREV_COUNT" ]; then
           echo "New vulnerabilities detected! Previous: $PREV_COUNT, Current: $NEW_COUNT"
