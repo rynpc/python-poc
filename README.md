@@ -1,14 +1,15 @@
-# Simple Task Manager
+# Task Manager
 
-A simple command-line task manager application that demonstrates Python best practices and testability.
+A simple command-line task management application built with Python.
 
 ## Features
 
 - Add tasks with title, description, and optional due date
-- List all tasks or only incomplete tasks
+- List all tasks or filter by completion status
 - Mark tasks as completed
 - Delete tasks
-- Full unit test coverage with HTML reports
+- Update task details
+- Input validation and error handling
 
 ## Project Structure
 
@@ -20,74 +21,81 @@ python-poc/
 ├── tests/                 # Test files
 │   └── test_task_manager.py
 ├── scripts/              # Development scripts
-│   ├── setup.sh         # Setup development environment
-│   └── teardown.sh      # Clean up development environment
-├── requirements.txt      # Project dependencies
-├── pytest.ini           # Test configuration
+│   ├── setup.sh         # Initialize development environment
+│   ├── test.sh          # Run tests with coverage
+│   └── run.sh           # Run the application
+├── requirements.txt       # Project dependencies
+├── pytest.ini           # Pytest configuration
 └── README.md            # This file
 ```
 
-## Quick Start
+## Installation
 
-1. Clone this repository
+1. Clone the repository:
+```bash
+git clone <repository-url>
+cd python-poc
+```
+
 2. Run the setup script:
-   ```bash
-   # On macOS/Linux:
-   ./scripts/setup.sh
-   
-   # On Windows (using Git Bash or WSL):
-   ./scripts/setup.sh
-   ```
-   This will:
-   - Create a virtual environment
-   - Install dependencies
-   - Run the tests to verify everything is working
-
-## Development
-
-### Running Tests
 ```bash
-# Basic test run
-pytest
-
-# Run tests with coverage report
-pytest --cov=. --cov-report=term-missing
+./scripts/setup.sh
 ```
 
-### IDE Integration
-- **Cursor IDE**: Open the integrated terminal (Cmd/Ctrl + `), ensure you're in the project directory, and run `pytest`
-- **VS Code**: Install the Python extension and click the "Run Test" button above any test
-- **PyCharm**: Click the green "Run" button next to any test
-
-### Clean Up
-When you're done developing or want to start fresh:
+Or manually:
 ```bash
-./scripts/teardown.sh
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
 ```
-This will clean up the virtual environment, cache files, and coverage reports.
 
 ## Usage
 
-Run the CLI application:
+Run the application:
+```bash
+./scripts/run.sh
+```
+
+Or manually:
 ```bash
 python src/cli.py
 ```
 
-The application will present a menu with the following options:
-1. Add task
-2. List tasks
-3. Mark task as completed
-4. Delete task
-5. Exit
+### Menu Options
 
-## Contributing
+1. **Add task**: Create a new task with title, description, and optional due date
+2. **List tasks**: View all tasks or filter by completion status
+3. **Mark task as completed**: Mark a task as done
+4. **Delete task**: Remove a task from the list
+5. **Exit**: Close the application
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run the tests: `pytest`
-5. Submit a pull request
+## Development
+
+### Running Tests
+
+```bash
+./scripts/test.sh
+```
+
+Or manually:
+```bash
+python -m pytest tests/ -v
+```
+
+### Code Coverage
+
+The test script automatically generates and opens a coverage report in your browser. You can also generate it manually:
+```bash
+python -m pytest tests/ --cov=src --cov-report=html
+```
+
+## Dependencies
+
+- Python 3.9+
+- pytest
+- pytest-cov
+- datetime
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details. 
+MIT License 

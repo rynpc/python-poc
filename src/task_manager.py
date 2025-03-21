@@ -1,34 +1,37 @@
 """
-Task Manager Module
+Task Manager module for managing tasks in a simple task management system.
 
-This module provides a simple task management system with support for:
-- Adding tasks with title, description, and optional due date
-- Listing all tasks or only incomplete tasks
-- Marking tasks as completed
+This module provides the core functionality for managing tasks, including:
+- Adding new tasks with title, description, and optional due date
+- Retrieving tasks by ID
+- Updating existing tasks
 - Deleting tasks
-- Updating task details
+- Listing all tasks or filtering by completion status
+- Marking tasks as completed
 
 Example:
+    >>> from task_manager import TaskManager, Task
     >>> manager = TaskManager()
-    >>> task = manager.add_task("Buy groceries", "Milk, eggs, bread")
-    >>> print(task.title)
-    'Buy groceries'
+    >>> task = manager.add_task("Write docs", "Document the codebase")
+    >>> manager.mark_completed(task.id)
+    >>> tasks = manager.list_tasks()
 """
 
-from datetime import datetime
-from typing import List, Optional, Dict
 from dataclasses import dataclass
+from datetime import datetime
+from typing import Dict, List, Optional
 
 @dataclass
 class Task:
-    """Represents a single task in the task manager.
-    
+    """
+    A task in the task management system.
+
     Attributes:
-        id: Unique identifier for the task
-        title: Task title
-        description: Task description
-        due_date: Optional due date for the task
-        completed: Whether the task is completed
+        id (int): Unique identifier for the task
+        title (str): Title of the task
+        description (str): Detailed description of the task
+        due_date (Optional[datetime]): Optional due date for the task
+        completed (bool): Whether the task is completed
     """
     id: int
     title: str
@@ -37,114 +40,131 @@ class Task:
     completed: bool = False
 
 class TaskManager:
-    """Manages a collection of tasks with CRUD operations.
-    
-    This class provides methods to add, retrieve, update, and delete tasks,
-    as well as list tasks and mark them as completed.
     """
-    
+    Manages tasks in the task management system.
+
+    This class provides methods for creating, retrieving, updating,
+    and deleting tasks, as well as listing tasks and marking them as completed.
+    """
+
     def __init__(self):
-        """Initialize a new TaskManager with an empty task collection."""
-        self.tasks: Dict[int, Task] = {}
+        """Initialize an empty task manager."""
+        self._tasks: Dict[int, Task] = {}
         self._next_id: int = 1
 
     def add_task(self, title: str, description: str, due_date: Optional[datetime] = None) -> Task:
-        """Add a new task to the task manager.
-        
+        """
+        Add a new task to the manager.
+
         Args:
-            title: The task title
-            description: The task description
+            title: The title of the task
+            description: A detailed description of the task
             due_date: Optional due date for the task
-            
+
         Returns:
-            The newly created Task object
-            
+            The newly created task
+
         Raises:
             ValueError: If title or description is empty
         """
         if not title or not description:
             raise ValueError("Title and description are required")
-        
+
         task = Task(
             id=self._next_id,
             title=title,
             description=description,
             due_date=due_date
         )
-        self.tasks[task.id] = task
+        self._tasks[task.id] = task
         self._next_id += 1
         return task
 
-    def get_task(self, task_id: int) -> Optional[Task]:
-        """Retrieve a task by its ID.
-        
+    def get_task(self, task_id: int) -> Task:
+        """
+        Get a task by its ID.
+
         Args:
             task_id: The ID of the task to retrieve
-            
-        Returns:
-            The Task object if found, None otherwise
-        """
-        return self.tasks.get(task_id)
 
-    def update_task(self, task_id: int, **kwargs) -> Optional[Task]:
-        """Update an existing task's attributes.
-        
+        Returns:
+            The requested task
+
+        Raises:
+            KeyError: If the task ID doesn't exist
+        """
+        if task_id not in self._tasks:
+            raise KeyError(f"Task with ID {task_id} not found")
+        return self._tasks[task_id]
+
+    def update_task(self, task_id: int, title: str = None, description: str = None,
+                   due_date: Optional[datetime] = None) -> Task:
+        """
+        Update an existing task.
+
         Args:
             task_id: The ID of the task to update
-            **kwargs: Arbitrary keyword arguments for task attributes to update
-            
+            title: New title (optional)
+            description: New description (optional)
+            due_date: New due date (optional)
+
         Returns:
-            The updated Task object if found, None otherwise
+            The updated task
+
+        Raises:
+            KeyError: If the task ID doesn't exist
         """
-        task = self.tasks.get(task_id)
-        if not task:
-            return None
-        
-        for key, value in kwargs.items():
-            if hasattr(task, key):
-                setattr(task, key, value)
-        
+        task = self.get_task(task_id)
+        if title is not None:
+            task.title = title
+        if description is not None:
+            task.description = description
+        if due_date is not None:
+            task.due_date = due_date
         return task
 
-    def delete_task(self, task_id: int) -> bool:
-        """Delete a task by its ID.
-        
+    def delete_task(self, task_id: int) -> None:
+        """
+        Delete a task by its ID.
+
         Args:
             task_id: The ID of the task to delete
-            
-        Returns:
-            True if the task was deleted, False if it wasn't found
-        """
-        if task_id in self.tasks:
-            del self.tasks[task_id]
-            return True
-        return False
 
-    def list_tasks(self, show_completed: bool = True) -> List[Task]:
-        """List all tasks, optionally filtering completed ones.
-        
-        Args:
-            show_completed: Whether to include completed tasks in the list
-            
-        Returns:
-            List of Task objects
+        Raises:
+            KeyError: If the task ID doesn't exist
         """
-        tasks = list(self.tasks.values())
-        if not show_completed:
+        if task_id not in self._tasks:
+            raise KeyError(f"Task with ID {task_id} not found")
+        del self._tasks[task_id]
+
+    def list_tasks(self, include_completed: bool = True) -> List[Task]:
+        """
+        List all tasks, optionally filtering by completion status.
+
+        Args:
+            include_completed: Whether to include completed tasks
+
+        Returns:
+            A list of tasks matching the filter criteria
+        """
+        tasks = list(self._tasks.values())
+        if not include_completed:
             tasks = [task for task in tasks if not task.completed]
         return tasks
 
-    def mark_completed(self, task_id: int) -> bool:
-        """Mark a task as completed.
-        
+    def mark_completed(self, task_id: int) -> Task:
+        """
+        Mark a task as completed.
+
         Args:
             task_id: The ID of the task to mark as completed
-            
+
         Returns:
-            True if the task was marked as completed, False if it wasn't found
+            The updated task
+
+        Raises:
+            KeyError: If the task ID doesn't exist
         """
-        task = self.tasks.get(task_id)
-        if task:
-            task.completed = True
-            return True
-        return False 
+        task = self.get_task(task_id)
+        task.completed = True
+        return task 
