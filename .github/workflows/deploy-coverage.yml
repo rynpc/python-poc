@@ -41,6 +41,6 @@ jobs:
       - name: Debug gh-pages branch after deployment
         run: |
           echo "Cloning gh-pages branch to verify deployment:"
-          git clone --branch gh-pages https://github.com/${{ github.repository_owner }}/${{ github.repository }}.git gh-pages-branch
+          git clone --branch gh-pages https://github.com/${{ github.repository }}.git gh-pages-branch
           echo "Listing contents of gh-pages branch:"
           ls -R gh-pages-branch
