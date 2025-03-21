@@ -13,7 +13,7 @@ The interface is user-friendly and handles input validation.
 from datetime import datetime
 from typing import Optional
 
-from src.task_manager import TaskManager, Task
+from src.task_manager import Task, TaskManager
 
 
 def print_task(task: Task) -> None:
