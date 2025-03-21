@@ -15,6 +15,7 @@ from typing import Optional
 
 from src.task_manager import TaskManager, Task
 
+
 def print_task(task: Task) -> None:
     """
     Print a task's details in a formatted way.
@@ -27,6 +28,7 @@ def print_task(task: Task) -> None:
     print(f"\n[{status}] Task {task.id}: {task.title}")
     print(f"Description: {task.description}")
     print(f"Due date: {due_date}")
+
 
 def parse_date(date_str: str) -> Optional[datetime]:
     """
@@ -45,6 +47,7 @@ def parse_date(date_str: str) -> Optional[datetime]:
     except ValueError:
         print("Invalid date format. Please use YYYY-MM-DD")
         return None
+
 
 def add_task(manager: TaskManager) -> None:
     """
@@ -69,6 +72,7 @@ def add_task(manager: TaskManager) -> None:
     except ValueError as e:
         print(f"\nError: {e}")
 
+
 def list_tasks(manager: TaskManager) -> None:
     """
     List all tasks in the manager.
@@ -76,7 +80,7 @@ def list_tasks(manager: TaskManager) -> None:
     Args:
         manager: The task manager instance
     """
-    include_completed = input("\nInclude completed tasks? (y/N): ").lower() == 'y'
+    include_completed = input("\nInclude completed tasks? (y/N): ").lower() == "y"
     tasks = manager.list_tasks(include_completed)
 
     if not tasks:
@@ -86,6 +90,7 @@ def list_tasks(manager: TaskManager) -> None:
     print("\nTasks:")
     for task in tasks:
         print_task(task)
+
 
 def mark_completed(manager: TaskManager) -> None:
     """
@@ -104,6 +109,7 @@ def mark_completed(manager: TaskManager) -> None:
     except KeyError as e:
         print(f"\nError: {e}")
 
+
 def delete_task(manager: TaskManager) -> None:
     """
     Delete a task through user input.
@@ -120,6 +126,7 @@ def delete_task(manager: TaskManager) -> None:
     except KeyError as e:
         print(f"\nError: {e}")
 
+
 def print_menu() -> None:
     """Print the main menu options."""
     print("\nTask Manager Menu:")
@@ -129,6 +136,7 @@ def print_menu() -> None:
     print("4. Delete task")
     print("5. Exit")
 
+
 def main() -> None:
     """Main entry point for the CLI application."""
     manager = TaskManager()
@@ -136,7 +144,7 @@ def main() -> None:
         "1": add_task,
         "2": list_tasks,
         "3": mark_completed,
-        "4": delete_task
+        "4": delete_task,
     }
 
     while True:
@@ -153,5 +161,6 @@ def main() -> None:
         else:
             print("\nInvalid choice. Please try again.")
 
+
 if __name__ == "__main__":
-    main() 
+    main()

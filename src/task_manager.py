@@ -21,6 +21,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
 
+
 @dataclass
 class Task:
     """
@@ -33,11 +34,13 @@ class Task:
         due_date (Optional[datetime]): Optional due date for the task
         completed (bool): Whether the task is completed
     """
+
     id: int
     title: str
     description: str
     due_date: Optional[datetime] = None
     completed: bool = False
+
 
 class TaskManager:
     """
@@ -52,7 +55,9 @@ class TaskManager:
         self._tasks: Dict[int, Task] = {}
         self._next_id: int = 1
 
-    def add_task(self, title: str, description: str, due_date: Optional[datetime] = None) -> Task:
+    def add_task(
+        self, title: str, description: str, due_date: Optional[datetime] = None
+    ) -> Task:
         """
         Add a new task to the manager.
 
@@ -65,7 +70,7 @@ class TaskManager:
             The newly created task
 
         Raises:
-            ValueError: If title or description is empty
+            ValueError: If title or description are empty
         """
         if not title or not description:
             raise ValueError("Title and description are required")
@@ -74,7 +79,7 @@ class TaskManager:
             id=self._next_id,
             title=title,
             description=description,
-            due_date=due_date
+            due_date=due_date,
         )
         self._tasks[task.id] = task
         self._next_id += 1
@@ -97,8 +102,13 @@ class TaskManager:
             raise KeyError(f"Task with ID {task_id} not found")
         return self._tasks[task_id]
 
-    def update_task(self, task_id: int, title: str = None, description: str = None,
-                   due_date: Optional[datetime] = None) -> Task:
+    def update_task(
+        self,
+        task_id: int,
+        title: str = None,
+        description: str = None,
+        due_date: Optional[datetime] = None,
+    ) -> Task:
         """
         Update an existing task.
 
@@ -167,4 +177,4 @@ class TaskManager:
         """
         task = self.get_task(task_id)
         task.completed = True
-        return task 
+        return task
