@@ -1,8 +1,8 @@
-name: CI and Deploy Coverage
+name: "CI/CD Pipeline"
 
 on:
   workflow_run:
-    workflows: ["CodeQL"]
+    workflows: ["Security Analysis"]  # Renamed from CodeQL for clarity
     types:
       - completed
     branches: ["main"]
@@ -19,11 +19,14 @@ permissions:
 env:
   PYTHON_VERSION: '3.x'
   COVERAGE_REPORT_DIR: htmlcov
+  MIN_COVERAGE: 30  # Minimum required coverage percentage
 
 jobs:
-  tests-and-coverage:
+  test:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
+    outputs:
+      coverage: ${{ steps.get-coverage.outputs.coverage }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -50,20 +53,40 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          pytest --cov=src --cov-report=html --cov-report=xml --cov-report=json
+          pytest --cov=src --cov-report=html --cov-report=json
 
-      - name: Upload coverage report artifact
+      - name: Get coverage percentage
+        id: get-coverage
+        run: |
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
+          echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
+          echo "Coverage: $COVERAGE%"
+
+      - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
           path: |
-            coverage.xml
-            .coverage
             coverage.json
             ${{ env.COVERAGE_REPORT_DIR }}
+          retention-days: 1
 
-  deploy-coverage:
-    needs: tests-and-coverage
+  quality-gate:
+    needs: test
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=${{ needs.test.outputs.coverage }}
+          if (( $(echo "$COVERAGE < ${{ env.MIN_COVERAGE }}" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below minimum threshold of ${{ env.MIN_COVERAGE }}%"
+            exit 1
+          fi
+          echo "Coverage ${COVERAGE}% meets minimum threshold of ${{ env.MIN_COVERAGE }}%"
+
+  deploy:
+    needs: [test, quality-gate]
     if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     environment: production
@@ -76,18 +99,15 @@ jobs:
           token: ${{ secrets.WORKFLOW_TOKEN }}
           ref: ${{ github.event.workflow_run.head_sha }}
 
-      - name: Download coverage report artifact
+      - name: Download coverage artifacts
         uses: actions/download-artifact@v4
         with:
           name: coverage-report
 
-      - name: Update Coverage Badge in README
+      - name: Update coverage badge
         run: |
-          # Get coverage from JSON report
-          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json)
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
           echo "Coverage: $COVERAGE%"
-          
-          # Update badge directly using sed
           sed -i "s/coverage-[0-9.]*%25/coverage-${COVERAGE}%25/" README.md
           
           git config --global user.name "GitHub Actions"
@@ -104,7 +124,7 @@ jobs:
             }
           fi
 
-      - name: Deploy Coverage Report to GitHub Pages
+      - name: Deploy to GitHub Pages
         run: |
           git checkout --orphan gh-pages
           find . -maxdepth 1 -not -name "${COVERAGE_REPORT_DIR}" -not -name '.git' -not -name '.gitignore' -exec rm -rf {} \;
