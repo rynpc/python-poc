@@ -1,0 +1,280 @@
+name: "CI/CD Pipeline"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  schedule:
+    - cron: '30 1 * * 0'  # Weekly security scan
+
+permissions:
+  actions: read
+  contents: write
+  security-events: write
+  pages: write
+  checks: write
+
+env:
+  PYTHON_VERSION: '3.x'
+  COVERAGE_REPORT_DIR: htmlcov
+  MIN_COVERAGE: 30
+
+jobs:
+  # Reusable job for Python setup
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      cache-key: ${{ steps.cache-key.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+      
+      - id: cache-key
+        run: |
+          echo "value=${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install safety # For dependency vulnerability scanning
+
+  # Reusable step for Python setup and dependency installation
+  steps:
+    setup-python:
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+  security:
+    name: Security Analysis
+    needs: setup
+    if: github.actor != 'github-actions[bot]' || !contains(github.event.head_commit.message, 'Update coverage badge')
+    runs-on: ubuntu-latest
+    outputs:
+      security_status: ${{ steps.vuln-comparison.outputs.status }}
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/workflows/steps/setup-python
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: python
+          queries: security-and-quality
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:python"
+
+      - name: Check dependency vulnerabilities
+        run: |
+          safety check
+
+      - name: Get previous vulnerabilities count
+        id: prev-vulns
+        run: |
+          PREV_ALERTS=$(gh api graphql -f query='
+            query {
+              repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
+                vulnerabilityAlerts(first:100, states: OPEN) {
+                  nodes {
+                    securityVulnerability {
+                      severity
+                    }
+                  }
+                }
+              }
+            }
+          ')
+          echo "Previous alerts:"
+          echo "$PREV_ALERTS" | jq -r '.data.repository.vulnerabilityAlerts.nodes[] | .securityVulnerability.severity'
+          echo "count=$(echo "$PREV_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')" >> "$GITHUB_OUTPUT"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Compare vulnerability counts
+        id: vuln-comparison
+        run: |
+          NEW_ALERTS=$(gh api graphql -f query='
+            query {
+              repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
+                vulnerabilityAlerts(first:100, states: OPEN) {
+                  nodes {
+                    securityVulnerability {
+                      severity
+                    }
+                  }
+                }
+              }
+            }
+          ')
+          NEW_COUNT=$(echo "$NEW_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')
+          PREV_COUNT=${{ steps.prev-vulns.outputs.count }}
+          
+          if [ "$NEW_COUNT" -gt "$PREV_COUNT" ]; then
+            echo "New vulnerabilities detected! Previous: $PREV_COUNT, Current: $NEW_COUNT"
+            echo "status=failed" >> "$GITHUB_OUTPUT"
+            exit 1
+          else
+            echo "No new vulnerabilities detected"
+            echo "status=success" >> "$GITHUB_OUTPUT"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  code-quality:
+    needs: security
+    if: always() && (needs.security.result == 'success' || needs.security.result == 'skipped')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/workflows/steps/setup-python
+
+      - name: Check formatting with Black
+        run: black --check src tests
+          
+      - name: Check import ordering
+        run: isort --check-only --diff src tests
+
+      - name: Run Flake8
+        run: flake8 src tests
+
+      - name: Run Pylint
+        run: pylint src tests
+
+      - name: Run MyPy type checking
+        run: mypy src tests
+
+      - name: Run Bandit security checks
+        run: bandit -r src -x tests
+
+      - name: Check documentation coverage
+        run: |
+          python -m pip install interrogate
+          interrogate -v src
+
+  test:
+    needs: [security, code-quality]
+    if: always() && (needs.security.result == 'success' || needs.security.result == 'skipped')
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    outputs:
+      coverage: ${{ steps.get-coverage.outputs.coverage }}
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python and Install Dependencies
+        uses: ./.github/workflows/steps/setup-python
+
+      - name: Run tests with coverage
+        run: pytest --cov=src --cov-report=html --cov-report=json
+
+      - name: Get coverage percentage
+        id: get-coverage
+        if: matrix.python-version == '3.12'  # Only get coverage from one version
+        run: |
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
+          echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
+          echo "Coverage: $COVERAGE%"
+
+      - name: Upload coverage report
+        if: matrix.python-version == '3.12'  # Only upload from one version
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            coverage.json
+            ${{ env.COVERAGE_REPORT_DIR }}
+          retention-days: 1
+
+  coverage-gate:
+    needs: test
+    if: success() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=${{ needs.test.outputs.coverage }}
+          if (( $(echo "$COVERAGE < ${{ env.MIN_COVERAGE }}" | bc -l) )); then
+            echo "Coverage ${COVERAGE}% is below minimum threshold of ${{ env.MIN_COVERAGE }}%"
+            exit 1
+          fi
+          echo "Coverage ${COVERAGE}% meets minimum threshold of ${{ env.MIN_COVERAGE }}%"
+
+  deploy:
+    needs: [test, coverage-gate]
+    if: success() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment: production
+    concurrency: 
+      group: production
+      cancel-in-progress: false
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.WORKFLOW_TOKEN }}
+
+      - name: Download coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+
+      - name: Update coverage badge
+        run: |
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
+          echo "Coverage: $COVERAGE%"
+          sed -i "s/coverage-[0-9.]*%25/coverage-${COVERAGE}%25/" README.md
+          
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          
+          if git diff --quiet README.md; then
+            echo "No changes to README.md, skipping commit"
+          else
+            git add README.md
+            git commit -m "Update coverage badge to ${COVERAGE}%"
+            git push origin HEAD:main || {
+              echo "Failed to push to main branch"
+              exit 1
+            }
+          fi
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git checkout --orphan gh-pages
+          find . -maxdepth 1 -not -name "${COVERAGE_REPORT_DIR}" -not -name '.git' -not -name '.gitignore' -exec rm -rf {} \;
+          cp -r ${COVERAGE_REPORT_DIR}/* .
+          touch .nojekyll
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add -A
+          git commit -m "Deploy coverage report for commit ${GITHUB_SHA}"
+          git push --force origin gh-pages

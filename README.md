@@ -2,7 +2,7 @@
 
 A simple command-line task management application built with Python, featuring automated test coverage reporting.
 
-[![Coverage](https://img.shields.io/badge/coverage-37.69230769230769%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)
+[![Coverage](https://img.shields.io/badge/coverage-30%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)
 
 ## Features
 
@@ -21,24 +21,27 @@ A simple command-line task management application built with Python, featuring a
 ```
 python-poc/
 ├── src/                     # Source code
-│   ├── task_manager.py     # Core task management functionality
-│   ├── cli.py             # Command-line interface
-│   └── coverage_utils/    # Coverage reporting utilities
-│       └── get_coverage.py # Coverage badge updater
-├── tests/                  # Test files
+│   ├── task_manager.py      # Core task management functionality
+│   ├── cli.py               # Command-line interface
+│   └── coverage_utils/      # Coverage reporting utilities
+│       └── get_coverage.py  # Coverage badge updater
+├── tests/                   # Test files
 │   ├── test_task_manager.py
 │   └── test_get_coverage.py
-├── .github/               # GitHub Actions workflows
+├── .github/                 # GitHub Actions workflows
 │   └── workflows/
+│       ├── pipeline.yml     # CI/CD pipeline workflow
 │       ├── deploy-coverage.yml  # Coverage reporting workflow
-│       └── codeql.yml          # Security scanning workflow
-├── scripts/               # Development scripts
-│   ├── setup.sh          # Initialize development environment
-│   ├── test.sh           # Run tests with coverage
-│   └── run.sh            # Run the application
-├── requirements.txt       # Project dependencies
-├── pytest.ini            # Pytest configuration
-└── README.md             # This file
+│       └── codeql.yml       # Security scanning workflow
+├── scripts/                 # Development scripts
+│   ├── setup.sh             # Initialize development environment
+│   ├── test.sh              # Run tests with coverage
+│   └── run.sh               # Run the application
+├── htmlcov/                 # HTML coverage reports
+├── README.md                # Project documentation
+├── requirements.txt         # Project dependencies
+├── pytest.ini               # Pytest configuration
+├── coverage.xml             # XML coverage report
 ```
 
 ## Installation
@@ -99,7 +102,7 @@ python -m pytest tests/ --cov=src --cov-report=html --cov-report=xml
 Test coverage is automatically tracked and reported:
 - Coverage badge in README is updated automatically via GitHub Actions
 - Coverage reports are deployed to GitHub Pages
-- View detailed coverage report at: https://rynpc.github.io/python-poc/
+- View detailed coverage report at: [https://rynpc.github.io/python-poc/](https://rynpc.github.io/python-poc/)
 
 ### GitHub Actions Workflows
 
@@ -110,7 +113,7 @@ The project uses GitHub Actions for automation:
 
 ## Dependencies
 
-- Python 3.12+
+- Python 3.x
 - pytest >= 7.4.0
 - pytest-cov >= 4.1.0
 - python-dateutil >= 2.8.2
