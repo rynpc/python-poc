@@ -90,14 +90,11 @@ jobs:
 
       - name: Update Coverage Badge in README
         run: |
-          echo "Updating coverage badge..."
-          COVERAGE=$(python -m src.coverage_utils.get_coverage --coverage-xml coverage.xml --readme README.md)
-          EXIT_CODE=$?
-          if [ $EXIT_CODE -ne 0 ]; then
-            echo "Error updating coverage badge (exit code: $EXIT_CODE)"
-            exit 1
-          fi
+          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json)
           echo "Coverage: $COVERAGE%"
+          
+          # Update badge directly using sed
+          sed -i "s/coverage-[0-9.]*%25/coverage-${COVERAGE}%25/" README.md
           
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
