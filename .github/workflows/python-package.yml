@@ -58,4 +58,4 @@ jobs:
     with:
       coverage-artifact: coverage-reports-3.11-${{ github.run_id }}
     secrets:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
+      deploy_token: ${{ secrets.GITHUB_TOKEN }}

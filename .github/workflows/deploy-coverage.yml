@@ -7,7 +7,7 @@ on:
         required: true
         type: string
     secrets:
-      github_token:
+      deploy_token:
         required: true
 
 jobs:
@@ -34,6 +34,6 @@ jobs:
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.github_token }}
+          github_token: ${{ secrets.deploy_token }}
           publish_dir: ./coverage-report/htmlcov
           destination_dir: coverage 
