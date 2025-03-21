@@ -132,6 +132,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Log Security Job Result
+        run: |
+          echo "Security job result: ${{ needs.security.result }}"
+          if [ "${{ needs.security.result }}" == "success" ]; then
+            echo "Security job succeeded."
+          elif [ "${{ needs.security.result }}" == "failure" ]; then
+            echo "Security job failed."
+          else
+            echo "Security job was skipped."
+          fi
+
   code-quality:
     needs: setup
     if: always() && (needs.security.result == 'success' || needs.security.result == 'skipped')
@@ -205,11 +216,22 @@ jobs:
             ${{ env.COVERAGE_REPORT_DIR }}
           retention-days: 1
 
+      - name: Log Test Job Outputs
+        run: |
+          echo "Test job outputs:"
+          echo "Coverage: ${{ steps.get-coverage.outputs.coverage }}"
+
   coverage-gate:
     needs: test
     if: success() && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     steps:
+      - name: Log Coverage Gate Inputs
+        run: |
+          echo "Coverage Gate Inputs:"
+          echo "Test job result: ${{ needs.test.result }}"
+          echo "Coverage: ${{ needs.test.outputs.coverage }}"
+
       - name: Check coverage threshold
         run: |
           COVERAGE=${{ needs.test.outputs.coverage }}
@@ -229,6 +251,12 @@ jobs:
       cancel-in-progress: false
     
     steps:
+      - name: Log Deploy Inputs
+        run: |
+          echo "Deploy Inputs:"
+          echo "Test job result: ${{ needs.test.result }}"
+          echo "Coverage Gate result: ${{ needs.coverage-gate.result }}"
+
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
