@@ -1,6 +1,4 @@
-"""
-Task Manager package.
-"""
+"""Initialize the src module."""
 
 from .task_manager import Task, TaskManager
 

@@ -23,12 +23,12 @@ mypy src tests
 
 # Run security checks with Safety
 echo "Running security checks with Safety..."
-safety check
+safety scan --full-report
 
 # Run security checks with Bandit
 echo "Running security checks with Bandit..."
 bandit -r src -x tests
 
-# Check documentation coverage with Interrogate
-echo "Checking documentation coverage with Interrogate..."
-interrogate -v src
+# Check documentation coverage with pydocstyle
+echo "Checking documentation coverage with pydocstyle..."
+pydocstyle src

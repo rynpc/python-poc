@@ -138,7 +138,10 @@ def print_menu() -> None:
 
 
 def main() -> None:
-    """Main entry point for the CLI application."""
+    """Run the main function.
+
+    Main entry point for the CLI application.
+    """
     manager = TaskManager()
     actions = {
         "1": add_task,

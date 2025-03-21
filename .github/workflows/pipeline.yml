@@ -169,7 +169,7 @@ jobs:
         run: bandit -r src -x tests
 
       - name: Check documentation coverage
-        run: interrogate -v src
+        run: pydocstyle src
 
   test:
     needs: [security, code-quality]
