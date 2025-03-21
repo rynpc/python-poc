@@ -10,16 +10,24 @@ def update_coverage_badge(coverage_value, readme_path):
         with open(readme_path, 'r') as f:
             content = f.read()
         
-        new_content = re.sub(
-            r'\[!\[Coverage\]\([^)]*\)\]\([^)]*\)',
-            f'[![Coverage]({badge_url})](https://rynpc.github.io/python-poc/)',
-            content
-        )
+        # Handle both full and simple badge formats
+        patterns = [
+            r'\[!\[Coverage\]\([^)]*\)\]\([^)]*\)',  # Full format: [![Coverage](url)](link)
+            r'!\[Coverage\]\([^)]*\)'                 # Simple format: ![Coverage](url)
+        ]
         
-        with open(readme_path, 'w') as f:
-            f.write(new_content)
+        for pattern in patterns:
+            if re.search(pattern, content):
+                new_content = re.sub(
+                    pattern,
+                    f'[![Coverage]({badge_url})](https://rynpc.github.io/python-poc/)',
+                    content
+                )
+                with open(readme_path, 'w') as f:
+                    f.write(new_content)
+                return True
         
-        return True
+        return False
     except Exception as e:
         print(f"Error updating README: {e}", file=sys.stderr)
         return False
