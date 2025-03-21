@@ -1,4 +1,4 @@
-name: CI and Deploy Coverage Report
+name: CI and Deploy Coverage
 
 on:
   push:
@@ -7,86 +7,28 @@ on:
     branches: ["main"]
 
 jobs:
-  ci-and-deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
-      - name: Checkout repository
+      - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Run tests and generate coverage report
+      - name: Run tests with coverage
         run: |
-          bash scripts/test.sh
-
-      - name: Move coverage report
-        run: |
-          mkdir -p coverage-report
-          mv htmlcov coverage-report/
-
-      - name: Check coverage report
-        run: |
-          if [ ! -d "coverage-report/htmlcov" ]; then
-            echo "Error: Coverage report not found in expected location"
-            exit 1
-          fi
-          echo "Coverage report found at coverage-report/htmlcov"
-          ls -la coverage-report/htmlcov
-
-      - name: Generate coverage badge
-        run: |
-          if [ -f "coverage-report/coverage.xml" ]; then
-            COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
-            echo "coverage: $COVERAGE"
-            echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
-          else
-            echo "coverage.xml not found, using default badge"
-            echo "![Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)" > coverage-report/badge.md
-          fi
-
-      - name: Create index.html
-        run: |
-          echo "<!DOCTYPE html>
-          <html>
-          <head>
-            <title>Coverage Report</title>
-            <meta http-equiv='refresh' content='0;url=htmlcov/index.html'>
-          </head>
-          <body>
-            <p>Redirecting to coverage report...</p>
-          </body>
-          </html>" > coverage-report/index.html
-
-      - name: Create .nojekyll
-        run: |
-          touch coverage-report/.nojekyll
+          pytest --cov=src --cov-report=html --cov-report=xml
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
-          github_token: ${{ secrets.deploy_token }}
-          publish_dir: coverage-report  # Publish the entire folder
-          destination_dir: .
-          force_orphan: true
-          commit_message: "Deploy coverage report"
-          full_commit_message: "Deploy coverage report to GitHub Pages"
-          publish_branch: gh-pages
-          enable_jekyll: false
-          disable_nojekyll: true
-
-      - name: Verify deployment
-        run: |
-          echo "Waiting for GitHub Pages to update..."
-          sleep 10
-          echo "Checking GitHub Pages URL..."
-          curl -I https://${{ github.repository_owner }}.github.io/${{ github.repository }}/
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: htmlcov
