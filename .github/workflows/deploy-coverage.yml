@@ -64,6 +64,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: htmlcov
           keep_files: true
+          destination_dir: .
 
       - name: Debug copied htmlcov directory
         run: |
