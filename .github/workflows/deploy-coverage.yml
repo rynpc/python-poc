@@ -29,8 +29,14 @@ jobs:
 
       - name: Debug htmlcov directory
         run: |
-          echo "Listing contents of htmlcov directory before deployment:"
-          ls -R htmlcov
+          echo "Listing contents of htmlcov directory:" && ls -la htmlcov
+
+      - name: Debug GitHub Pages branch before deployment
+        run: |
+          echo "Fetching and listing contents of gh-pages branch before deployment:" && \
+          git fetch origin gh-pages && \
+          git checkout gh-pages && \
+          ls -la
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
@@ -38,9 +44,9 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: htmlcov
 
-      - name: Debug gh-pages branch after deployment
+      - name: Debug GitHub Pages branch after deployment
         run: |
-          echo "Cloning gh-pages branch to verify deployment:"
-          git clone --branch gh-pages https://github.com/${{ github.repository }}.git gh-pages-branch
-          echo "Listing contents of gh-pages branch:"
-          ls -R gh-pages-branch
+          echo "Fetching and listing contents of gh-pages branch after deployment:" && \
+          git fetch origin gh-pages && \
+          git checkout gh-pages && \
+          ls -la
