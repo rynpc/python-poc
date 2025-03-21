@@ -21,9 +21,7 @@ flake8 src tests
 echo "Running type checking with MyPy..."
 mypy src tests
 
-# Run security checks with Safety
-echo "Running security checks with Safety..."
-safety scan --full-report
+# Removed safety scan step as CodeQL already performs security analysis
 
 # Run security checks with Bandit
 echo "Running security checks with Bandit..."

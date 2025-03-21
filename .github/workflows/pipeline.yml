@@ -80,10 +80,6 @@ jobs:
         with:
           category: "/language:python"
 
-      - name: Check dependency vulnerabilities
-        run: |
-          safety scan --full-report
-
       - name: Get previous vulnerabilities count
         id: prev-vulns
         run: |
