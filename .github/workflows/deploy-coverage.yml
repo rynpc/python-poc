@@ -88,3 +88,13 @@ jobs:
           git fetch origin gh-pages && \
           git checkout gh-pages && \
           ls -la
+
+      - name: Update Coverage Badge in README
+        run: |
+          echo "Extracting coverage percentage from coverage.xml..."
+          COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%.0f", $1 * 100)}')
+          echo "Coverage percentage: $COVERAGE%"
+          sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" README.md
+          git add README.md
+          git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
+          git push
