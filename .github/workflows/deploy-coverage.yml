@@ -8,18 +8,22 @@ on:
 
 jobs:
   build-and-deploy:
-    if: github.event.commits[0].author.email != 'actions@github.com'  # Prevent recursion
+    if: github.event.commits[0].author.email != 'actions@github.com'
     runs-on: ubuntu-latest
+    environment: production
+    permissions:
+      actions: read
+      contents: write
+      security-events: write
+      
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Needed for proper git history
+          fetch-depth: 0
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
-          python-version: "3.x"
+          python-version: '3.x'
 
       - name: Install dependencies
         run: |
@@ -28,6 +32,22 @@ jobs:
 
       - name: Run tests with coverage
         run: pytest --cov=src --cov-report=html --cov-report=xml
+
+      - name: Wait for CodeQL scan
+        run: |
+          while true; do
+            STATUS=$(curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+                    "https://api.github.com/repos/${{ github.repository }}/commits/${{ github.sha }}/check-runs?check_name=CodeQL" | \
+                    jq -r '.check_runs[0].conclusion')
+            if [ "$STATUS" = "success" ]; then
+              break
+            elif [ "$STATUS" = "failure" ] || [ "$STATUS" = "cancelled" ]; then
+              echo "CodeQL scan failed or was cancelled"
+              exit 1
+            fi
+            echo "Waiting for CodeQL scan to complete..."
+            sleep 30
+          done
 
       - name: Update Coverage Badge in README (main branch)
         if: github.ref == 'refs/heads/main'
@@ -40,7 +60,6 @@ jobs:
           fi
           echo "Coverage: $COVERAGE%"
           
-          # Commit and push changes
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add README.md
