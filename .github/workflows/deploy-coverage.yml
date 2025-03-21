@@ -137,11 +137,17 @@ jobs:
       - name: Update Coverage Badge in README
         run: |
           echo "Updating coverage badge in README.md..."
-          sed -i "s/\[![Coverage](.*)\](.*)/[![Coverage](https:\/\/img.shields.io\/badge\/coverage-$COVERAGE%25-brightgreen.svg)](https:\/\/rynpc.github.io\/python-poc\/)/" gh-pages/README.md
-          cd gh-pages
-          git add README.md
-          git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
-          git push
+          CURRENT_BADGE=$(grep -oP '\[!\[Coverage\]\(.*\)\]\(.*\)' gh-pages/README.md)
+          NEW_BADGE="[![Coverage](https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)"
+          if [ "$CURRENT_BADGE" != "$NEW_BADGE" ]; then
+            sed -i "s|$CURRENT_BADGE|$NEW_BADGE|" gh-pages/README.md
+            cd gh-pages
+            git add README.md
+            git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
+            git push
+          else
+            echo "Coverage badge is already up-to-date. Skipping commit."
+          fi
 
       - name: Update Coverage Badge in README (main branch)
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
