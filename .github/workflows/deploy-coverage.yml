@@ -33,7 +33,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           COVERAGE=$(grep -oP 'line-rate="\K[0-9.]+' coverage.xml | awk '{printf("%d", $1 * 100)}')
-          if [ -z "$COVERAGE" ] || [ "$COVERAGE" < 0 ] || [ "$COVERAGE" > 100 ]; then
+          if [ -z "$COVERAGE" ] || [ "$COVERAGE" -lt 0 ] || [ "$COVERAGE" -gt 100 ]; then
             echo "Error: Invalid coverage percentage. Exiting."
             exit 1
           fi
