@@ -51,7 +51,7 @@ jobs:
       - name: Clean gh-pages branch
         run: |
           echo "Cleaning gh-pages branch before deployment:" && \
-          git rm -r --ignore-unmatch *
+          git rm -r --cached --ignore-unmatch *
 
       - name: Restore README.md
         run: |
