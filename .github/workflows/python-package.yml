@@ -54,28 +54,8 @@ jobs:
   deploy-coverage:
     needs: build
     if: github.ref == 'refs/heads/main'  # Only deploy on main branch
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download coverage report
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-reports-3.11-${{ github.run_id }}
-          path: coverage-report
-
-      - name: Generate coverage badge
-        run: |
-          if [ -f "coverage-report/coverage.xml" ]; then
-            COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
-            echo "coverage: $COVERAGE"
-            echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
-          else
-            echo "coverage.xml not found, using default badge"
-            echo "![Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)" > coverage-report/badge.md
-          fi
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./coverage-report/htmlcov
-          destination_dir: coverage
+    uses: ./.github/workflows/deploy-coverage.yml
+    with:
+      coverage-artifact: coverage-reports-3.11-${{ github.run_id }}
+    secrets:
+      github_token: ${{ secrets.GITHUB_TOKEN }}

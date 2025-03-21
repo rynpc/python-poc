@@ -1,0 +1,39 @@
+name: Deploy Coverage Report
+
+on:
+  workflow_call:
+    inputs:
+      coverage-artifact:
+        required: true
+        type: string
+    secrets:
+      github_token:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage report
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.coverage-artifact }}
+          path: coverage-report
+
+      - name: Generate coverage badge
+        run: |
+          if [ -f "coverage-report/coverage.xml" ]; then
+            COVERAGE=$(python3 -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage-report/coverage.xml'); root = tree.getroot(); print(root.attrib['line-rate'])")
+            echo "coverage: $COVERAGE"
+            echo "![Coverage](https://img.shields.io/badge/coverage-${COVERAGE}%25-brightgreen.svg)" > coverage-report/badge.md
+          else
+            echo "coverage.xml not found, using default badge"
+            echo "![Coverage](https://img.shields.io/badge/coverage-0%25-red.svg)" > coverage-report/badge.md
+          fi
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.github_token }}
+          publish_dir: ./coverage-report/htmlcov
+          destination_dir: coverage 
