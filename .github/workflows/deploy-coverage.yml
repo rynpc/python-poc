@@ -139,8 +139,15 @@ jobs:
           echo "Updating coverage badge in README.md..."
           CURRENT_BADGE=$(grep -oP '\[!\[Coverage\]\(https://img\.shields\.io/badge/coverage-[0-9]+%25-brightgreen\.svg\)\]\(.*\)' gh-pages/README.md || echo "")
           NEW_BADGE="[![Coverage](https://img.shields.io/badge/coverage-$COVERAGE%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)"
+          echo "Current Badge: $CURRENT_BADGE"
+          echo "New Badge: $NEW_BADGE"
           if [ "$CURRENT_BADGE" != "$NEW_BADGE" ]; then
-            sed -i "s|$CURRENT_BADGE|$NEW_BADGE|" gh-pages/README.md
+            if [ -z "$CURRENT_BADGE" ]; then
+              echo "No existing badge found. Adding new badge."
+              echo "$NEW_BADGE" >> gh-pages/README.md
+            else
+              sed -i "s|$CURRENT_BADGE|$NEW_BADGE|" gh-pages/README.md
+            fi
             cd gh-pages
             git add README.md
             git -c user.name='github-actions' -c user.email='actions@github.com' commit -m "Update coverage badge to $COVERAGE%"
