@@ -43,6 +43,16 @@ jobs:
           echo "Cleaning gh-pages branch before deployment:" && \
           git rm -r --ignore-unmatch *
 
+      - name: Force add all files
+        run: |
+          echo "Force adding all files to the commit:" && \
+          git add -A
+
+      - name: Force commit
+        run: |
+          echo "Forcing a commit even if no changes are detected:" && \
+          git commit -m "Force deploy coverage" || echo "No changes to commit"
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -54,6 +64,11 @@ jobs:
         run: |
           echo "Listing contents of htmlcov directory in gh-pages branch after copying:" && \
           ls -la htmlcov
+
+      - name: Compare htmlcov directory
+        run: |
+          echo "Comparing htmlcov directory before and after deployment:" && \
+          diff -r htmlcov /home/runner/actions_github_pages_1742571236942/htmlcov || echo "No differences found"
 
       - name: Debug gh-pages branch after deployment
         run: |
