@@ -27,8 +27,20 @@ jobs:
         run: |
           pytest --cov=src --cov-report=html --cov-report=xml
 
+      - name: Debug htmlcov directory
+        run: |
+          echo "Listing contents of htmlcov directory before deployment:"
+          ls -R htmlcov
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: htmlcov
+
+      - name: Debug gh-pages branch after deployment
+        run: |
+          echo "Cloning gh-pages branch to verify deployment:"
+          git clone --branch gh-pages https://github.com/${{ github.repository_owner }}/${{ github.repository }} gh-pages-branch
+          echo "Listing contents of gh-pages branch:"
+          ls -R gh-pages-branch
