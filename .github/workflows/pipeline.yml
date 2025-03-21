@@ -129,13 +129,15 @@ jobs:
             echo "No new vulnerabilities detected"
             echo "status=success" >> "$GITHUB_OUTPUT"
           fi
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Log Security Job Status
         run: |
           echo "Security job status: ${{ steps.vuln-comparison.outputs.status }}"
-          if [ "${{ steps.vuln-comparison.outputs.status }}" == "success" ]; then
+          if [ "${{ steps.vuln-comparison.outputs.status }}" == "success"; then
             echo "Security job succeeded."
-          elif [ "${{ steps.vuln-comparison.outputs.status }}" == "failed" ]; then
+          elif [ "${{ steps.vuln-comparison.outputs.status }}" == "failed"; then
             echo "Security job failed."
           else
             echo "Security job status is unknown."
@@ -144,17 +146,17 @@ jobs:
       - name: Log Security Job Result
         run: |
           echo "Security job result: ${{ needs.security.result }}"
-          if [ "${{ needs.security.result }}" == "success" ]; then
+          if [ "${{ needs.security.result }}" == "success"; then
             echo "Security job succeeded."
-          elif [ "${{ needs.security.result }}" == "failure" ]; then
+          elif [ "${{ needs.security.result }}" == "failure"; then
             echo "Security job failed."
           else
             echo "Security job was skipped."
           fi
 
   code-quality:
-    needs: setup
-    if: always() && (needs.security.result == 'success' || needs.security.result == 'skipped')
+    needs: security
+    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -189,7 +191,7 @@ jobs:
 
   test:
     needs: [security, code-quality]
-    if: always() && (needs.security.result == 'success' || needs.security.result == 'skipped')
+    if: success()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
