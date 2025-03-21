@@ -6,16 +6,19 @@ on:
   pull_request:
     branches: ["main"]
 
+permissions:
+  contents: write    # Required for checkout and committing changes
+  pages: write      # Required for GitHub Pages deployment
+  security-events: write  # Required for CodeQL analysis
+  actions: read     # Required for running actions
+  checks: read      # Required for checking workflow status
+
 jobs:
   build-and-deploy:
-    if: github.event.commits[0].author.email != 'actions@github.com'
+    if: github.event.commits[0].author.email != 'actions@github.com'  # Prevent recursion
     runs-on: ubuntu-latest
     environment: production
-    permissions:
-      actions: read
-      contents: write
-      security-events: write
-      
+    
     steps:
       - uses: actions/checkout@v4
         with:
