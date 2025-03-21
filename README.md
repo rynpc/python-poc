@@ -2,7 +2,7 @@
 
 A simple command-line task management application built with Python.
 
-[![Coverage](https://img.shields.io/badge/coverage-98%25-brightgreen.svg)](https://rynpc.github.io/python-poc/) [View Coverage Report](https://rynpc.github.io/python-poc/)
+[![Coverage](https://img.shields.io/badge/coverage-38381000100%25-brightgreen.svg)](https://rynpc.github.io/python-poc/)
 
 ## Features
 
