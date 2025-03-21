@@ -72,7 +72,7 @@ jobs:
 
       - name: Force add all files
         run: |
-          echo "Force adding all files to the commit:" && \
+          echo "Force adding all files to the commit, including untracked files:" && \
           git add -A
 
       - name: Force commit
