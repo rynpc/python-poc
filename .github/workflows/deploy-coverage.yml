@@ -68,7 +68,7 @@ jobs:
       - name: List deployed files
         run: |
           echo "Checking deployed files..."
-          git clone https://github.com/ryancowan/python-poc.git temp-repo
+          git clone https://x-access-token:${{ secrets.deploy_token }}@github.com/ryancowan/python-poc.git temp-repo
           cd temp-repo
           git checkout gh-pages
           ls -la
