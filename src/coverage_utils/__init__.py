@@ -1,1 +1,1 @@
-# Package initialization
+"""Coverage utilities package"""
