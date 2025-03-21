@@ -38,13 +38,24 @@ jobs:
           git checkout gh-pages && \
           ls -la
 
+      - name: Clean gh-pages branch
+        run: |
+          echo "Cleaning gh-pages branch before deployment:" && \
+          git rm -r --ignore-unmatch *
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: htmlcov
+          keep_files: true
 
-      - name: Debug GitHub Pages branch after deployment
+      - name: Debug copied htmlcov directory
+        run: |
+          echo "Listing contents of htmlcov directory in gh-pages branch after copying:" && \
+          ls -la htmlcov
+
+      - name: Debug gh-pages branch after deployment
         run: |
           echo "Fetching and listing contents of gh-pages branch after deployment:" && \
           git fetch origin gh-pages && \
