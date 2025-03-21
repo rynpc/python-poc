@@ -1,8 +1,7 @@
 import pytest
 import os
 import tempfile
-from pathlib import Path
-from ..github.scripts.get_coverage import update_coverage_badge
+from src.coverage_utils.get_coverage import update_coverage_badge
 
 @pytest.fixture
 def sample_coverage_xml():

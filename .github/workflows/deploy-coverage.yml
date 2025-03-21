@@ -33,7 +33,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           echo "Updating coverage badge..."
-          COVERAGE=$(python .github/scripts/get_coverage.py --coverage-xml coverage.xml --readme README.md)
+          COVERAGE=$(python -m src.coverage_utils.get_coverage --coverage-xml coverage.xml --readme README.md)
           if [ $? -ne 0 ]; then
             echo "Error updating coverage badge"
             exit 1
