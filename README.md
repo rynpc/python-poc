@@ -10,6 +10,23 @@ A simple command-line task manager application that demonstrates Python best pra
 - Delete tasks
 - Full unit test coverage with HTML reports
 
+## Project Structure
+
+```
+python-poc/
+├── src/                    # Source code
+│   ├── task_manager.py    # Core task management functionality
+│   └── cli.py            # Command-line interface
+├── tests/                 # Test files
+│   └── test_task_manager.py
+├── scripts/              # Development scripts
+│   ├── setup.sh         # Setup development environment
+│   └── teardown.sh      # Clean up development environment
+├── requirements.txt      # Project dependencies
+├── pytest.ini           # Test configuration
+└── README.md            # This file
+```
+
 ## Quick Start
 
 1. Clone this repository
@@ -53,7 +70,7 @@ This will clean up the virtual environment, cache files, and coverage reports.
 
 Run the CLI application:
 ```bash
-python cli.py
+python src/cli.py
 ```
 
 The application will present a menu with the following options:
@@ -63,12 +80,14 @@ The application will present a menu with the following options:
 4. Delete task
 5. Exit
 
-## Project Structure
+## Contributing
 
-- `task_manager.py`: Core task management functionality
-- `cli.py`: Command-line interface
-- `test_task_manager.py`: Unit tests
-- `requirements.txt`: Project dependencies
-- `pytest.ini`: Test configuration
-- `scripts/`: Development setup and cleanup scripts
-- `htmlcov/`: Generated coverage reports (after running tests) 
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run the tests: `pytest`
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details. 
