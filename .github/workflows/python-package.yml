@@ -29,6 +29,8 @@ jobs:
     - name: Run tests with coverage
       run: |
         pytest --cov=src --cov-report=html --cov-report=xml
+        echo "Coverage report generated:"
+        ls -la htmlcov/
     - name: Upload coverage report
       uses: actions/upload-artifact@v4
       with:

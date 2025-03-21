@@ -35,6 +35,7 @@ jobs:
             exit 1
           fi
           echo "Coverage report found at coverage-report/htmlcov"
+          ls -la coverage-report/htmlcov
 
       - name: Generate coverage badge
         run: |
@@ -64,6 +65,13 @@ jobs:
         run: |
           touch coverage-report/.nojekyll
 
+      - name: Debug directory structure
+        run: |
+          echo "Current directory structure:"
+          ls -la coverage-report/
+          echo "Contents of htmlcov directory:"
+          ls -la coverage-report/htmlcov/
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
@@ -83,10 +91,16 @@ jobs:
           git clone https://x-access-token:${{ secrets.deploy_token }}@github.com/${{ inputs.repository-owner }}/${{ inputs.repository-name }}.git temp-repo
           cd temp-repo
           git checkout gh-pages
+          echo "Files in gh-pages branch:"
           ls -la
+          echo "Contents of htmlcov directory:"
+          ls -la htmlcov/
 
       - name: Verify deployment
         run: |
           echo "Waiting for GitHub Pages to update..."
           sleep 10
-          curl -I https://${{ inputs.repository-owner }}.github.io/${{ inputs.repository-name }}/ 
+          echo "Checking GitHub Pages URL..."
+          curl -I https://${{ inputs.repository-owner }}.github.io/${{ inputs.repository-name }}/
+          echo "Checking htmlcov URL directly..."
+          curl -I https://${{ inputs.repository-owner }}.github.io/${{ inputs.repository-name }}/htmlcov/index.html 
