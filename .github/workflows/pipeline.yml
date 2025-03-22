@@ -3,6 +3,7 @@ name: "CI/CD Pipeline"
 on:
   push:
     branches: [ "main" ]
+    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Update coverage badge')
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -47,7 +48,6 @@ jobs:
   security:
     name: Security Analysis
     needs: setup
-    if: github.actor != 'github-actions[bot]' || !contains(github.event.head_commit.message, 'Update coverage badge')
     runs-on: ubuntu-latest
     outputs:
       security_status: ${{ steps.vuln-comparison.outputs.status }}
