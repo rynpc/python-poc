@@ -11,12 +11,7 @@ black>=24.2.0
 mypy>=1.9.0
 bandit>=1.7.8
 isort>=5.12.0
-
-# Add pylint for linting
 pylint>=3.0.0
 
 # Documentation coverage
 pydocstyle>=6.3.0
-
-# Add safety to the requirements file for dependency vulnerability scanning
-safety>=2.3.0

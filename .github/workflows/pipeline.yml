@@ -173,7 +173,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-            - name: Check formatting with Black
+      - name: Check formatting with Black
         run: black --check src tests
           
       - name: Check import ordering
