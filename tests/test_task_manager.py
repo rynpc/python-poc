@@ -145,26 +145,13 @@ def test_add_task_missing_fields():
         m.add_task("title", "")
 
 
-def test_update_task():
-    m = TaskManager()
-    t = m.add_task("T", "D")
-    updated = m.update_task(t.id, title="T2", description="D2")
-    assert updated.title == "T2"
-    assert updated.description == "D2"
-
-
 def test_update_task_invalid_id():
     m = TaskManager()
     with pytest.raises(KeyError):
         m.update_task(999, title="nope")
 
 
-def test_delete_task():
-    m = TaskManager()
-    t = m.add_task("A", "B")
-    m.delete_task(t.id)
-    with pytest.raises(KeyError):
-        m.get_task(t.id)
+# Removed duplicate test_update_task and test_delete_task here
 
 
 def test_list_tasks_and_mark_completed():
