@@ -1,3 +1,5 @@
+"""CLI for interacting with the task management system."""
+
 from datetime import datetime
 from typing import Optional
 
@@ -11,6 +13,7 @@ from src.task_manager import Task, TaskManager
 
 
 def print_task(task: Task) -> None:
+    """Prints the details of a single task."""
     status = "✓" if task.completed else " "
     due_date = task.due_date.strftime("%Y-%m-%d") if task.due_date else "No due date"
     print(f"\n[{status}] Task {task.id}: {task.title}")
@@ -19,6 +22,7 @@ def print_task(task: Task) -> None:
 
 
 def parse_date(date_str: str) -> Optional[datetime]:
+    """Parse a date string into a datetime object."""
     if not date_str:
         return None
     try:
@@ -29,6 +33,7 @@ def parse_date(date_str: str) -> Optional[datetime]:
 
 
 def add_task_cli(manager: TaskManager) -> None:
+    """CLI handler to add a new task."""
     print("\nAdd a new task:")
     title = input("Title: ").strip()
     description = input("Description: ").strip()
@@ -45,6 +50,7 @@ def add_task_cli(manager: TaskManager) -> None:
 
 
 def list_tasks_cli(manager: TaskManager) -> None:
+    """CLI handler to list tasks."""
     include_completed = input("\nInclude completed tasks? (y/N): ").lower() == "y"
     tasks = list_tasks_api(manager, include_completed)
     if not tasks:
@@ -56,6 +62,7 @@ def list_tasks_cli(manager: TaskManager) -> None:
 
 
 def mark_completed_cli(manager: TaskManager) -> None:
+    """CLI handler to mark a task as completed."""
     try:
         task_id = int(input("\nEnter task ID to mark as completed: "))
         task = mark_completed_api(manager, task_id)
@@ -68,6 +75,7 @@ def mark_completed_cli(manager: TaskManager) -> None:
 
 
 def delete_task_cli(manager: TaskManager) -> None:
+    """CLI handler to delete a task."""
     try:
         task_id = int(input("\nEnter task ID to delete: "))
         delete_task_api(manager, task_id)
@@ -79,6 +87,7 @@ def delete_task_cli(manager: TaskManager) -> None:
 
 
 def print_menu() -> None:
+    """Prints the main menu."""
     print("\nTask Manager Menu:")
     print("1. Add task")
     print("2. List tasks")
@@ -88,6 +97,7 @@ def print_menu() -> None:
 
 
 def main() -> None:
+    """Main entry point for the CLI."""
     manager = TaskManager()
     actions = {
         "1": add_task_cli,
