@@ -1,15 +1,3 @@
-"""
-Command-line interface for the Task Manager application.
-
-This module provides a menu-driven interface for:
-- Adding new tasks
-- Listing all tasks
-- Marking tasks as completed
-- Deleting tasks
-
-The interface is user-friendly and handles input validation.
-"""
-
 from datetime import datetime
 from typing import Optional
 from src.task_manager import Task, TaskManager
@@ -17,8 +5,9 @@ from src.task_api import (
     add_task_api,
     list_tasks_api,
     mark_completed_api,
-    delete_task_api
+    delete_task_api,
 )
+
 
 def print_task(task: Task) -> None:
     status = "✓" if task.completed else " "
@@ -26,6 +15,7 @@ def print_task(task: Task) -> None:
     print(f"\n[{status}] Task {task.id}: {task.title}")
     print(f"Description: {task.description}")
     print(f"Due date: {due_date}")
+
 
 def parse_date(date_str: str) -> Optional[datetime]:
     if not date_str:
@@ -35,6 +25,7 @@ def parse_date(date_str: str) -> Optional[datetime]:
     except ValueError:
         print("Invalid date format. Please use YYYY-MM-DD")
         return None
+
 
 def add_task_cli(manager: TaskManager) -> None:
     print("\nAdd a new task:")
@@ -51,6 +42,7 @@ def add_task_cli(manager: TaskManager) -> None:
     except ValueError as e:
         print(f"\nError: {e}")
 
+
 def list_tasks_cli(manager: TaskManager) -> None:
     include_completed = input("\nInclude completed tasks? (y/N): ").lower() == "y"
     tasks = list_tasks_api(manager, include_completed)
@@ -60,6 +52,7 @@ def list_tasks_cli(manager: TaskManager) -> None:
     print("\nTasks:")
     for task in tasks:
         print_task(task)
+
 
 def mark_completed_cli(manager: TaskManager) -> None:
     try:
@@ -72,6 +65,7 @@ def mark_completed_cli(manager: TaskManager) -> None:
     except KeyError as e:
         print(f"\nError: {e}")
 
+
 def delete_task_cli(manager: TaskManager) -> None:
     try:
         task_id = int(input("\nEnter task ID to delete: "))
@@ -82,6 +76,7 @@ def delete_task_cli(manager: TaskManager) -> None:
     except KeyError as e:
         print(f"\nError: {e}")
 
+
 def print_menu() -> None:
     print("\nTask Manager Menu:")
     print("1. Add task")
@@ -89,6 +84,7 @@ def print_menu() -> None:
     print("3. Mark task as completed")
     print("4. Delete task")
     print("5. Exit")
+
 
 def main() -> None:
     manager = TaskManager()
@@ -109,6 +105,7 @@ def main() -> None:
             action(manager)
         else:
             print("\nInvalid choice. Please try again.")
+
 
 if __name__ == "__main__":
     main()
