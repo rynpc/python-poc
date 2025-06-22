@@ -127,3 +127,57 @@ def test_mark_completed() -> None:
     updated = manager.mark_completed(task.id)
     assert updated.completed
     assert task.completed  # Should update the original object
+
+def test_add_and_get_task():
+    m = TaskManager()
+    t = m.add_task("Title", "Description", datetime(2025, 1, 1))
+    assert t.title == "Title"
+    assert t.description == "Description"
+    assert isinstance(m.get_task(t.id), type(t))
+
+def test_add_task_missing_fields():
+    m = TaskManager()
+    with pytest.raises(ValueError):
+        m.add_task("", "desc")
+    with pytest.raises(ValueError):
+        m.add_task("title", "")
+
+def test_update_task():
+    m = TaskManager()
+    t = m.add_task("T", "D")
+    updated = m.update_task(t.id, title="T2", description="D2")
+    assert updated.title == "T2"
+    assert updated.description == "D2"
+
+def test_update_task_invalid_id():
+    m = TaskManager()
+    with pytest.raises(KeyError):
+        m.update_task(999, title="nope")
+
+def test_delete_task():
+    m = TaskManager()
+    t = m.add_task("A", "B")
+    m.delete_task(t.id)
+    with pytest.raises(KeyError):
+        m.get_task(t.id)
+
+def test_list_tasks_and_mark_completed():
+    m = TaskManager()
+    t1 = m.add_task("A", "B")
+    t2 = m.add_task("C", "D")
+    m.mark_completed(t1.id)
+    all_tasks = m.list_tasks()
+    not_completed = m.list_tasks(include_completed=False)
+    assert len(all_tasks) == 2
+    assert len(not_completed) == 1
+    assert not_completed[0].id == t2.id
+
+def test_mark_completed_invalid_id():
+    m = TaskManager()
+    with pytest.raises(KeyError):
+        m.mark_completed(123)
+
+def test_get_task_invalid_id():
+    m = TaskManager()
+    with pytest.raises(KeyError):
+        m.get_task(999)
