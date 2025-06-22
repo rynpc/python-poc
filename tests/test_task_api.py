@@ -40,7 +40,8 @@ class TestTaskAPI(unittest.TestCase):
 
     def test_delete_task(self) -> None:
         """Test deleting a task via the API."""
-        task = add_task_api(self.manager, "ToDelete", "", None)
+        # Provide both a title and a non-empty description
+        task = add_task_api(self.manager, "ToDelete", "This will be deleted", None)
         delete_task_api(self.manager, task.id)
         self.assertEqual(len(list_tasks_api(self.manager)), 0)
 
