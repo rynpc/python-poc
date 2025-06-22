@@ -129,7 +129,7 @@ def test_mark_completed() -> None:
     assert task.completed  # Should update the original object
 
 
-def test_add_and_get_task():
+def test_add_and_get_task() -> None:
     """Test adding a task and then retrieving it."""
     m = TaskManager()
     t = m.add_task("Title", "Description", datetime(2025, 1, 1))
@@ -138,7 +138,7 @@ def test_add_and_get_task():
     assert isinstance(m.get_task(t.id), type(t))
 
 
-def test_add_task_missing_fields():
+def test_add_task_missing_fields() -> None:
     """Test validation for missing fields when adding a task."""
     m = TaskManager()
     with pytest.raises(ValueError):
@@ -147,7 +147,7 @@ def test_add_task_missing_fields():
         m.add_task("title", "")
 
 
-def test_update_task_invalid_id():
+def test_update_task_invalid_id() -> None:
     """Test updating a task with an invalid ID."""
     m = TaskManager()
     with pytest.raises(KeyError):
@@ -157,7 +157,7 @@ def test_update_task_invalid_id():
 # Removed duplicate test_update_task and test_delete_task here
 
 
-def test_list_tasks_and_mark_completed():
+def test_list_tasks_and_mark_completed() -> None:
     """Test listing tasks and marking one as completed."""
     m = TaskManager()
     t1 = m.add_task("A", "B")
@@ -170,14 +170,14 @@ def test_list_tasks_and_mark_completed():
     assert not_completed[0].id == t2.id
 
 
-def test_mark_completed_invalid_id():
+def test_mark_completed_invalid_id() -> None:
     """Test marking a non-existent task as completed."""
     m = TaskManager()
     with pytest.raises(KeyError):
         m.mark_completed(123)
 
 
-def test_get_task_invalid_id():
+def test_get_task_invalid_id() -> None:
     """Test retrieving a task with an invalid ID."""
     m = TaskManager()
     with pytest.raises(KeyError):
