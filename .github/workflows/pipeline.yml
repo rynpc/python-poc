@@ -92,17 +92,23 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install coverage
       - name: Run tests with coverage
         id: get-coverage
         run: |
           coverage run -m pytest src
-          coverage report
+          coverage report --fail-under=${{ env.MIN_COVERAGE }}
           coverage html
-      - name: Upload coverage report
+          coverage xml
+          coverage json
+      - name: Upload coverage reports
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html-${{ matrix.python-version }}-${{ github.run_id }}
-          path: htmlcov/
+          name: coverage-reports-${{ matrix.python-version }}-${{ github.run_id }}
+          path: |
+            htmlcov/
+            coverage.xml
+            coverage.json
 
   badge-update:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main') && (github.actor != 'github-actions[bot]' || !contains(github.event.head_commit.message, 'Update coverage badge'))
@@ -120,6 +126,7 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
@@ -127,7 +134,7 @@ jobs:
       - name: Generate coverage report (again for badge)
         run: |
           coverage run -m pytest src
-          coverage report
+          coverage report --fail-under=${{ env.MIN_COVERAGE }}
           coverage xml
           coverage json
       - name: Generate coverage badge
