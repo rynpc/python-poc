@@ -3,7 +3,6 @@ name: "CI/CD Pipeline"
 on:
   push:
     branches: [ "main" ]
-    if: github.actor != 'github-actions[bot]' && !contains(github.event.head_commit.message, 'Update coverage badge')
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -131,103 +130,7 @@ jobs:
           pip install -r requirements.txt
 
       - name: Run tests with coverage
-        run: pytest --cov=src --cov-report=html --cov-report=json
-
-      - name: Get coverage percentage
-        id: get-coverage
+        run: pytest --cov=src --cov-report=html id: get-coverage
         run: |
-          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
-          echo "coverage=$COVERAGE" >> "$GITHUB_OUTPUT"
-          echo "Coverage: $COVERAGE%"
-
-      - name: Upload coverage report
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-report
-          path: |
-            coverage.json
-            ${{ env.COVERAGE_REPORT_DIR }}
-          retention-days: 1
-
-      - name: Log Test Job Outputs
-        run: |
-          echo "Test job outputs:"
-          echo "Coverage: ${{ steps.get-coverage.outputs.coverage }}"
-
-  coverage-gate:
-    needs: test
-    if: success() && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Log Coverage Gate Inputs
-        run: |
-          echo "Coverage Gate Inputs:"
-          echo "Test job result: ${{ needs.test.result }}"
-          echo "Coverage: ${{ needs.test.outputs.coverage }}"
-
-      - name: Check coverage threshold
-        run: |
-          COVERAGE=${{ needs.test.outputs.coverage }}
-          if (( $(echo "$COVERAGE < ${{ env.MIN_COVERAGE }}" | bc -l) )); then
-            echo "Coverage ${COVERAGE}% is below minimum threshold of ${{ env.MIN_COVERAGE }}%"
-            exit 1
-          fi
-          echo "Coverage ${COVERAGE}% meets minimum threshold of ${{ env.MIN_COVERAGE }}%"
-
-  deploy:
-    needs: [test, coverage-gate]
-    if: success() && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    environment: production
-    concurrency: 
-      group: production
-      cancel-in-progress: false
-
-    steps:
-      - name: Log Deploy Inputs
-        run: |
-          echo "Deploy Inputs:"
-          echo "Test job result: ${{ needs.test.result }}"
-          echo "Coverage Gate result: ${{ needs.coverage-gate.result }}"
-
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.WORKFLOW_TOKEN }}
-
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-report
-
-      - name: Update coverage badge
-        run: |
-          COVERAGE=$(jq -r '.totals.percent_covered' coverage.json | xargs printf "%.0f")
-          echo "Coverage: $COVERAGE%"
-          sed -i "s/coverage-[0-9.]*%25/coverage-${COVERAGE}%25/" README.md
-          
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          
-          if git diff --quiet README.md; then
-            echo "No changes to README.md, skipping commit"
-          else
-            git add README.md
-            git commit -m "Update coverage badge to ${COVERAGE}%"
-            git push origin HEAD:main || {
-              echo "Failed to push to main branch"
-              exit 1
-            }
-          fi
-
-      - name: Deploy to GitHub Pages
-        run: |
-          git checkout --orphan gh-pages
-          find . -maxdepth 1 -not -name "${COVERAGE_REPORT_DIR}" -not -name '.git' -not -name '.gitignore' -exec rm -rf {} \;
-          cp -r ${COVERAGE_REPORT_DIR}/* .
-          touch .nojekyll
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "actions@github.com"
-          git add -A
-          git commit -m "Deploy coverage report for commit ${GITHUB_SHA}"
-          git push --force origin gh-pages
+         
+
