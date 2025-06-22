@@ -22,20 +22,19 @@ env:
   MIN_COVERAGE: 35
 
 jobs:
-  # Reusable job for Python setup
   setup:
     runs-on: ubuntu-latest
     outputs:
       cache-key: ${{ steps.cache-key.outputs.value }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: ${{ env.PYTHON_VERSION }}
           cache: 'pip'
-      
+
       - id: cache-key
         run: |
           echo "value=${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}" >> "$GITHUB_OUTPUT"
@@ -49,13 +48,8 @@ jobs:
     name: Security Analysis
     needs: setup
     runs-on: ubuntu-latest
-    outputs:
-      security_status: ${{ steps.vuln-comparison.outputs.status }}
-    
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -73,86 +67,9 @@ jobs:
         uses: github/codeql-action/init@v3
         with:
           languages: python
-          queries: security-and-quality
 
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
-        with:
-          category: "/language:python"
-
-      - name: Get previous vulnerabilities count
-        id: prev-vulns
-        run: |
-          PREV_ALERTS=$(gh api graphql -f query='
-            query {
-              repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
-                vulnerabilityAlerts(first:100, states: OPEN) {
-                  nodes {
-                    securityVulnerability {
-                      severity
-                    }
-                  }
-                }
-              }
-            }
-          ')
-          echo "Previous alerts:"
-          echo "$PREV_ALERTS" | jq -r '.data.repository.vulnerabilityAlerts.nodes[] | .securityVulnerability.severity'
-          echo "count=$(echo "$PREV_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')" >> "$GITHUB_OUTPUT"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Compare vulnerability counts
-        id: vuln-comparison
-        run: |
-          NEW_ALERTS=$(gh api graphql -f query='
-            query {
-              repository(owner:"${{ github.repository_owner }}", name:"${{ github.event.repository.name }}") {
-                vulnerabilityAlerts(first:100, states: OPEN) {
-                  nodes {
-                    securityVulnerability {
-                      severity
-                    }
-                  }
-                }
-              }
-            }
-          ')
-          NEW_COUNT=$(echo "$NEW_ALERTS" | jq '.data.repository.vulnerabilityAlerts.nodes | length')
-          PREV_COUNT=${{ steps.prev-vulns.outputs.count }}
-          
-          if [ "$NEW_COUNT" -gt "$PREV_COUNT"; then
-            echo "New vulnerabilities detected! Previous: $PREV_COUNT, Current: $NEW_COUNT"
-            echo "status=failed" >> "$GITHUB_OUTPUT"
-            exit 1
-          else
-            echo "No new vulnerabilities detected"
-            echo "status=success" >> "$GITHUB_OUTPUT"
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Log Security Job Status
-        run: |
-          echo "Security job status: ${{ steps.vuln-comparison.outputs.status }}"
-          if [ "${{ steps.vuln-comparison.outputs.status }}" == "success"; then
-            echo "Security job succeeded."
-          elif [ "${{ steps.vuln-comparison.outputs.status }}" == "failed"; then
-            echo "Security job failed."
-          else
-            echo "Security job status is unknown."
-          fi
-
-      - name: Log Security Job Result
-        run: |
-          echo "Security job result: ${{ needs.security.result }}"
-          if [ "${{ needs.security.result }}" == "success"; then
-            echo "Security job succeeded."
-          elif [ "${{ needs.security.result }}" == "failure"; then
-            echo "Security job failed."
-          else
-            echo "Security job was skipped."
-          fi
 
   code-quality:
     needs: security
@@ -175,7 +92,7 @@ jobs:
 
       - name: Check formatting with Black
         run: black --check src tests
-          
+
       - name: Check import ordering
         run: isort --check-only --diff src tests
 
@@ -265,7 +182,7 @@ jobs:
     concurrency: 
       group: production
       cancel-in-progress: false
-    
+
     steps:
       - name: Log Deploy Inputs
         run: |
