@@ -1,4 +1,4 @@
-"""API functions providing task management operations."""
+"""Provide API functions for task management operations."""
 
 from datetime import datetime
 from typing import List, Optional
