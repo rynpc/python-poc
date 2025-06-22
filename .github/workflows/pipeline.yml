@@ -98,10 +98,10 @@ jobs:
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-html
+          # Ensure the name is unique per matrix job
+          name: coverage-html-${{ matrix.python-version }}-${{ github.run_id }}
           path: htmlcov/
 
-  # Optional: Job that only runs when a PR is merged to main (for badge update)
   badge-update:
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')
     runs-on: ubuntu-latest
