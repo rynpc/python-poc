@@ -80,6 +80,8 @@ jobs:
       matrix:
         python-version: ['3.10', '3.11', '3.12']
     timeout-minutes: 20
+    env:
+      MIN_COVERAGE: ${{ env.MIN_COVERAGE }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Python
@@ -97,7 +99,7 @@ jobs:
         id: get-coverage
         run: |
           coverage run -m pytest src
-          coverage report --fail-under=${{ env.MIN_COVERAGE }}
+          coverage report --fail-under=$MIN_COVERAGE
           coverage html
           coverage xml
           coverage json
@@ -117,6 +119,8 @@ jobs:
     concurrency:
       group: production
       cancel-in-progress: false
+    env:
+      MIN_COVERAGE: ${{ env.MIN_COVERAGE }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -134,7 +138,7 @@ jobs:
       - name: Generate coverage report (again for badge)
         run: |
           coverage run -m pytest src
-          coverage report --fail-under=${{ env.MIN_COVERAGE }}
+          coverage report --fail-under=$MIN_COVERAGE
           coverage xml
           coverage json
       - name: Generate coverage badge
