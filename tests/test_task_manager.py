@@ -130,6 +130,7 @@ def test_mark_completed() -> None:
 
 
 def test_add_and_get_task():
+    """Test adding a task and then retrieving it."""
     m = TaskManager()
     t = m.add_task("Title", "Description", datetime(2025, 1, 1))
     assert t.title == "Title"
@@ -138,6 +139,7 @@ def test_add_and_get_task():
 
 
 def test_add_task_missing_fields():
+    """Test validation for missing fields when adding a task."""
     m = TaskManager()
     with pytest.raises(ValueError):
         m.add_task("", "desc")
@@ -146,6 +148,7 @@ def test_add_task_missing_fields():
 
 
 def test_update_task_invalid_id():
+    """Test updating a task with an invalid ID."""
     m = TaskManager()
     with pytest.raises(KeyError):
         m.update_task(999, title="nope")
@@ -155,6 +158,7 @@ def test_update_task_invalid_id():
 
 
 def test_list_tasks_and_mark_completed():
+    """Test listing tasks and marking one as completed."""
     m = TaskManager()
     t1 = m.add_task("A", "B")
     t2 = m.add_task("C", "D")
@@ -167,12 +171,14 @@ def test_list_tasks_and_mark_completed():
 
 
 def test_mark_completed_invalid_id():
+    """Test marking a non-existent task as completed."""
     m = TaskManager()
     with pytest.raises(KeyError):
         m.mark_completed(123)
 
 
 def test_get_task_invalid_id():
+    """Test retrieving a task with an invalid ID."""
     m = TaskManager()
     with pytest.raises(KeyError):
         m.get_task(999)
