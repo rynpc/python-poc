@@ -1,7 +1,13 @@
 import unittest
 from datetime import datetime
 from src.task_manager import TaskManager
-from src.task_api import add_task_api, list_tasks_api, mark_completed_api, delete_task_api
+from src.task_api import (
+    add_task_api,
+    list_tasks_api,
+    mark_completed_api,
+    delete_task_api,
+)
+
 
 class TestTaskAPI(unittest.TestCase):
     def setUp(self):
@@ -27,6 +33,7 @@ class TestTaskAPI(unittest.TestCase):
         task = add_task_api(self.manager, "ToDelete", "", None)
         delete_task_api(self.manager, task.id)
         self.assertEqual(len(list_tasks_api(self.manager)), 0)
+
 
 if __name__ == "__main__":
     unittest.main()
