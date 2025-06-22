@@ -1,7 +1,12 @@
 from datetime import datetime
 from typing import Optional
 
-from src.task_api import (add_task_api, delete_task_api, list_tasks_api, mark_completed_api)
+from src.task_api import (
+    add_task_api,
+    delete_task_api,
+    list_tasks_api,
+    mark_completed_api,
+)
 from src.task_manager import Task, TaskManager
 
 
