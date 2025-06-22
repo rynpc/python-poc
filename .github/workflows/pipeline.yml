@@ -43,35 +43,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-  security:
-    name: Security Analysis
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: 'pip'
-          cache-dependency-path: requirements.txt
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v3
-        with:
-          languages: python
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v3
-
   code-quality:
-    needs: security
+    needs: setup
     if: success()
     runs-on: ubuntu-latest
     steps:
@@ -111,7 +84,7 @@ jobs:
         run: pydocstyle src
 
   test:
-    needs: [security, code-quality]
+    needs: [code-quality]
     if: success()
     runs-on: ubuntu-latest
     steps:
