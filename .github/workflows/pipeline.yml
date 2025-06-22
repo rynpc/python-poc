@@ -96,7 +96,7 @@ jobs:
       - name: Run tests with coverage
         id: get-coverage
         run: |
-          coverage run -m pytest src
+          coverage run -m pytest
           coverage report --fail-under=$MIN_COVERAGE
           coverage html
           coverage xml
@@ -133,7 +133,7 @@ jobs:
           pip install coverage pytest
       - name: Generate coverage report (again for badge)
         run: |
-          coverage run -m pytest src
+          coverage run -m pytest
           coverage report --fail-under=$MIN_COVERAGE
           coverage xml
           coverage json
