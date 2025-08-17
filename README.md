@@ -106,6 +106,13 @@ Test coverage is automatically tracked and reported:
 
 ### GitHub Actions Workflows
 
+## CI/CD Pipeline Status
+
+⚠️ **The CI/CD pipeline is currently disabled.**  
+The workflow in `.github/workflows/pipeline.yml` has been commented out due to repeated job failures and lack of time to update it at the moment.  
+Once fixes and improvements are made, the pipeline will be restored.
+
+
 The project uses GitHub Actions for automation:
 - **Coverage Reporting**: Runs tests and updates coverage badge
 - **CodeQL Analysis**: Security scanning for code vulnerabilities
